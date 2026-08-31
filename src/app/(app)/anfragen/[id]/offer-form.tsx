@@ -56,7 +56,7 @@ export function OfferForm({
     initialState,
   );
   const [draftLines, setDraftLines] = useState<DraftLine[]>(
-    lines.length > 0 ? lines.map(toDraft) : [emptyLine()],
+    lines.map(toDraft),
   );
   const liveTotals = useMemo(() => {
     try {
@@ -104,20 +104,21 @@ export function OfferForm({
         </p>
       </label>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[40rem] text-left text-sm">
-          <thead>
-            <tr className="text-sm text-olive-dark/80">
-              <th className="pb-2 pr-3 font-medium">Beschreibung</th>
-              <th className="w-24 pb-2 pr-3 font-medium">Menge</th>
-              <th className="w-40 pb-2 pr-3 font-medium">Einzelpreis netto</th>
-              <th className="w-24 pb-2 font-medium" />
-            </tr>
-          </thead>
-          <tbody>
-            {draftLines.map((line, index) => (
-              <tr key={index} className="align-top">
-                <td className="pb-3 pr-3">
+      {draftLines.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[40rem] text-left text-sm">
+            <thead>
+              <tr className="text-sm text-olive-dark/80">
+                <th className="pb-2 pr-3 font-medium">Beschreibung</th>
+                <th className="w-24 pb-2 pr-3 font-medium">Menge</th>
+                <th className="w-40 pb-2 pr-3 font-medium">Einzelpreis netto</th>
+                <th className="w-24 pb-2 font-medium" />
+              </tr>
+            </thead>
+            <tbody>
+              {draftLines.map((line, index) => (
+                <tr key={index} className="align-top">
+                  <td className="pb-3 pr-3">
                     <input
                       name="description"
                       value={line.description}
@@ -125,10 +126,9 @@ export function OfferForm({
                         updateLine(index, { description: event.target.value })
                       }
                       className={fieldClass}
-                      placeholder="Location Alte Hettnerfabrik, Fr 11:00 bis So 11:00"
                     />
-                </td>
-                <td className="pb-3 pr-3">
+                  </td>
+                  <td className="pb-3 pr-3">
                     <input
                       name="quantity"
                       type="number"
@@ -140,8 +140,8 @@ export function OfferForm({
                       }
                       className={fieldClass}
                     />
-                </td>
-                <td className="pb-3 pr-3">
+                  </td>
+                  <td className="pb-3 pr-3">
                     <input
                       name="unitNet"
                       value={line.unitNet}
@@ -151,27 +151,26 @@ export function OfferForm({
                       className={fieldClass}
                       inputMode="decimal"
                     />
-                </td>
-                <td className="pb-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setDraftLines((current) =>
-                        current.length === 1
-                          ? current
-                          : current.filter((_, i) => i !== index),
-                      )
-                    }
-                    className="mt-2 text-sm text-olive/80 hover:text-olive-dark"
-                  >
-                    Entfernen
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </td>
+                  <td className="pb-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDraftLines((current) =>
+                          current.filter((_, i) => i !== index),
+                        )
+                      }
+                      className="mt-2 text-sm text-olive/80 hover:text-olive-dark"
+                    >
+                      Entfernen
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-4">
         <button
