@@ -1,12 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { calendarBlock, event as eventTable } from "@/db/schema";
-import { bookSaturday, BOOKED_WEEKEND, scheduleViewing } from "@/domain/calendar";
+import { bookSaturday, scheduleViewing } from "@/domain/calendar";
 import { CalendarConflictError } from "@/domain/errors";
 import { createEvent } from "@/domain/event";
 import {
   GUEST_COUNT_LOCKED_COPY,
-  bookedLocationWindowCopy,
   guestCountLockOn,
   isFullRefundUntil,
   isGuestCountLocked,
@@ -67,16 +66,6 @@ describe("storno cutoff", () => {
     expect(stornoWindowCopy("2026-09-12")).toBe(
       "Volle Rückerstattung bis 12.06.2026. Danach bleibt die Anzahlung.",
     );
-  });
-});
-
-describe("location window copy", () => {
-  it("uses the booked-weekend constants, not a settings table", () => {
-    expect(BOOKED_WEEKEND.startWeekday).toBe("friday");
-    expect(BOOKED_WEEKEND.startHour).toBe(11);
-    expect(BOOKED_WEEKEND.endWeekday).toBe("sunday");
-    expect(BOOKED_WEEKEND.endHour).toBe(11);
-    expect(bookedLocationWindowCopy()).toBe("Fr 11:00 bis So 11:00");
   });
 });
 

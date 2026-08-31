@@ -27,6 +27,29 @@ export const BOOKED_WEEKEND = {
   timeZone: APP_TIMEZONE,
 } as const;
 
+const WEEKDAY_SHORT_DE: Record<string, string> = {
+  monday: "Mo",
+  tuesday: "Di",
+  wednesday: "Mi",
+  thursday: "Do",
+  friday: "Fr",
+  saturday: "Sa",
+  sunday: "So",
+};
+
+function hourLabel(hour: number): string {
+  return `${String(hour).padStart(2, "0")}:00`;
+}
+
+/** Venue occupation copy from BOOKED_WEEKEND, not a settings row. */
+export function bookedLocationWindowCopy(): string {
+  const startDay =
+    WEEKDAY_SHORT_DE[BOOKED_WEEKEND.startWeekday] ?? BOOKED_WEEKEND.startWeekday;
+  const endDay =
+    WEEKDAY_SHORT_DE[BOOKED_WEEKEND.endWeekday] ?? BOOKED_WEEKEND.endWeekday;
+  return `${startDay} ${hourLabel(BOOKED_WEEKEND.startHour)} bis ${endDay} ${hourLabel(BOOKED_WEEKEND.endHour)}`;
+}
+
 export function bookedWeekendPeriod(saturdayYmd: string): TstzRange {
   const friday = addCalendarDays(saturdayYmd, -1);
   const sunday = addCalendarDays(saturdayYmd, 1);

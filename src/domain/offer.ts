@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { event as eventTable, offer, offerLine } from "@/db/schema";
 import type { AppSession } from "@/db/types";
-import { bookedLocationWindowCopy } from "@/domain/eventakte";
+import { bookedLocationWindowCopy } from "@/domain/calendar";
 import { formatOfferNumber, grossCents, vatCents } from "@/domain/money";
 import { formatCalendarDate } from "@/lib/timezone";
 
@@ -215,7 +215,25 @@ export type OfferWithEvent = NonNullable<
   Awaited<ReturnType<typeof getOfferForEvent>>
 >;
 
-export function offerPdfModel(record: OfferWithEvent) {
+export type OfferPdfSource = {
+  number: string;
+  issuedOn: string;
+  netCents: number;
+  vatCents: number;
+  grossCents: number;
+  lines: Array<{
+    description: string;
+    quantity: number;
+    unitNetCents: number;
+  }>;
+  event: {
+    coupleAName: string;
+    coupleBName: string;
+    eventDate: string | null;
+  };
+};
+
+export function offerPdfModel(record: OfferPdfSource) {
   return {
     number: record.number,
     issuedOnLabel: formatCalendarDate(record.issuedOn),

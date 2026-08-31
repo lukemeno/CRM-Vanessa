@@ -10,13 +10,10 @@ import { ReservedUntilForm } from "@/app/(app)/anfragen/[id]/reserved-until-form
 import { db } from "@/db/client";
 import {
   APPOINTMENT_KIND_LABELS,
+  bookedLocationWindowCopy,
   listAppointments,
 } from "@/domain/calendar";
-import {
-  bookedLocationWindowCopy,
-  isGuestCountLocked,
-  stornoWindowCopy,
-} from "@/domain/eventakte";
+import { isGuestCountLocked, stornoWindowCopy } from "@/domain/eventakte";
 import { EVENT_SOURCE_LABELS, getInquiry } from "@/domain/inquiry";
 import { getOfferForEvent } from "@/domain/offer";
 import {
