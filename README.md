@@ -2,7 +2,7 @@
 
 Betriebs-App für **Events by Vanessa** (Vanessa Düster, Alte Hettnerfabrik, Bad Münstereifel). Nach dem Anmelden landet die Operatorin auf `/heute`.
 
-Diese erste Version ist nur das Gerüst: Magic-Link-Login (Allowlist) und eine leere Desktop-Shell (Heute, Anfragen, Kalender). Anfragenboard, Kalenderinhalt, Angebote, Rechnungen und IMAP kommen in späteren PRs.
+Diese Version ist das Gerüst plus das Fachmodell in Postgres: Magic-Link-Login (Allowlist), eine leere Desktop-Shell (Heute, Anfragen, Kalender) und Tabellen für Eventakte, Termine, Kalenderblöcke und Rechnungen. Anfragenboard, Kalenderinhalt, Angebot-PDFs, IMAP und Heute-Inhalt kommen später.
 
 Die Oberfläche ist **desktop-first** (`md`/`lg`). Vanessa arbeitet am Rechner; Handy und Tablet bleiben lesbar, sind aber der Fallback, nicht die Vorlage.
 
@@ -71,7 +71,7 @@ Bei aktivem Bypass schreibt der Server den Magic-Link in die Konsole, statt eine
 
 ## Datenbank
 
-Drizzle + Postgres. PR-1 enthält nur die Auth.js-Tabellen (User, Account, Session, Verification Token), damit Magic-Links funktionieren. Fachliche Tabellen gehören in PR-2.
+Drizzle + Postgres. Auth.js-Tabellen (User, Account, Session, Verification Token) plus Fachtabellen `event`, `appointment`, `calendar_block`, `invoice`, `invoice_counter`. Überlappungen prüft nur `calendar_block` (`EXCLUDE USING gist`).
 
 `GET /api/health` meldet, ob Postgres erreichbar ist.
 
@@ -79,10 +79,8 @@ Drizzle + Postgres. PR-1 enthält nur die Auth.js-Tabellen (User, Account, Sessi
 
 Nicht in diesem PR:
 
-- Eventakte / Domain-Tabellen
 - Anfragenboard
 - Angebote und PDFs
-- Rechnungen
-- Kalenderinhalt
+- Kalender-UI
 - Inhalt der Heute-Kacheln
 - Kundenportal
