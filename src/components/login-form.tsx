@@ -54,7 +54,7 @@ export function LoginForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-full bg-olive px-4 py-2.5 text-sm font-medium text-paper transition hover:bg-olive-dark disabled:opacity-60"
+        className="rounded-full bg-olive px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-olive-dark disabled:opacity-60 max-lg:w-full"
       >
         {pending ? "Wird gesendet…" : "Anmeldelink senden"}
       </button>

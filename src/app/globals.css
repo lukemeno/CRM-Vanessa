@@ -25,3 +25,8 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/*
+  Layout is desktop-first. Unprefixed Tailwind is the operator canvas (md/lg).
+  Use max-lg / max-md only to keep phone and tablet readable.
+*/

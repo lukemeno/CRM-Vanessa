@@ -14,26 +14,35 @@ export default async function HomePage({
   const { error } = await searchParams;
 
   return (
-    <main className="relative flex min-h-full items-center justify-center overflow-hidden px-6 py-16">
-      <OliveBranch className="pointer-events-none absolute -top-6 right-0 h-56 w-44 text-olive/35" />
-      <OliveBranch
-        mirrored
-        className="pointer-events-none absolute -bottom-8 left-0 h-56 w-44 text-olive/30"
-      />
+    <main className="relative flex min-h-full max-lg:flex-col">
+      <section className="relative flex w-[28rem] shrink-0 flex-col justify-between overflow-hidden border-r border-olive/15 bg-paper px-12 py-12 max-lg:w-full max-lg:border-r-0 max-lg:px-6 max-lg:py-8">
+        <OliveBranch className="pointer-events-none absolute -right-8 -top-4 h-52 w-40 text-olive/30" />
+        <div>
+          <BrandMark />
+          <p className="mt-5 text-sm text-olive-dark/80">
+            Alte Hettnerfabrik · Bad Münstereifel
+          </p>
+        </div>
+        <p className="relative max-w-xs text-sm leading-relaxed text-foreground/75 max-lg:mt-6">
+          Mit Liebe zum Detail geplant – exklusiv für Euer Fest.
+        </p>
+      </section>
 
-      <section className="relative w-full max-w-md rounded-3xl bg-paper px-8 py-10 shadow-[0_18px_50px_rgba(90,80,50,0.08)]">
-        <BrandMark />
-        <p className="mt-4 text-center text-sm text-olive-dark/80">
-          Alte Hettnerfabrik · Bad Münstereifel
-        </p>
-        <h1 className="mt-8 font-serif text-2xl text-olive">Anmeldung</h1>
-        <p className="mt-2 mb-6 text-sm leading-relaxed text-foreground/80">
-          Nur für Vanessa und Luke. Wir schicken dir einen Link per E-Mail.
-        </p>
-        <LoginForm
-          showDevHint={isDevBypassEnabled()}
-          initialError={authErrorFromSearchParam(error)}
+      <section className="relative flex min-w-0 flex-1 items-center px-16 py-12 max-lg:items-start max-lg:px-6 max-lg:py-8">
+        <OliveBranch
+          mirrored
+          className="pointer-events-none absolute bottom-0 left-8 h-48 w-40 text-olive/20 max-lg:hidden"
         />
+        <div className="relative w-full max-w-md">
+          <h1 className="font-serif text-3xl text-olive">Anmeldung</h1>
+          <p className="mt-2 mb-8 text-sm leading-relaxed text-foreground/80">
+            Nur für Vanessa und Luke. Wir schicken dir einen Link per E-Mail.
+          </p>
+          <LoginForm
+            showDevHint={isDevBypassEnabled()}
+            initialError={authErrorFromSearchParam(error)}
+          />
+        </div>
       </section>
     </main>
   );

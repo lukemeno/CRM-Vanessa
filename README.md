@@ -4,6 +4,8 @@ Betriebs-App für **Events by Vanessa** (Vanessa Düster, Alte Hettnerfabrik, Ba
 
 Diese erste Version ist nur das Gerüst: Magic-Link-Login (Allowlist) und eine leere Heute-Ansicht. Anfragen, Angebote, Rechnungen und Kalender kommen in späteren PRs.
 
+Die Oberfläche ist **desktop-first** (`md`/`lg`). Vanessa arbeitet am Rechner; Handy und Tablet bleiben lesbar, sind aber der Fallback, nicht die Vorlage.
+
 ## Voraussetzungen
 
 - Node.js 20 oder neuer
