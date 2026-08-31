@@ -24,11 +24,47 @@ export function formatEuroFromCents(cents: number): string {
   }).format(cents / 100);
 }
 
-/** Date-style offer numbers (e.g. sample offer 21062026). Not invoice numbers. */
-export function formatOfferNumber(eventDate: string): string {
-  const [year, month, day] = eventDate.split("-");
+/**
+ * Date-style offer numbers from the issue date (DDMMYYYY).
+ * Sample 21062026 is 21.06.2026, not the wedding date. Not invoice numbers.
+ */
+export function formatOfferNumber(issuedOn: string): string {
+  const [year, month, day] = issuedOn.split("-");
   if (!year || !month || !day) {
-    throw new Error(`invalid calendar date: ${eventDate}`);
+    throw new Error(`invalid calendar date: ${issuedOn}`);
   }
   return `${day}${month}${year}`;
+}
+
+/** German EUR text to integer cents ("2.000,00" → 200000). */
+export function parseEuroToCents(raw: string): number {
+  const cleaned = raw.trim().replace(/\s/g, "").replace(/€/g, "");
+  if (!cleaned) {
+    throw new Error("money must be integer cents");
+  }
+  let normalized = cleaned;
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  } else if (cleaned.includes(",")) {
+    normalized = cleaned.replace(",", ".");
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
+    normalized = cleaned.replace(/\./g, "");
+  }
+  const value = Number(normalized);
+  if (!Number.isFinite(value)) {
+    throw new Error("money must be integer cents");
+  }
+  const cents = Math.round(value * 100);
+  if (!Number.isInteger(cents) || cents < 0) {
+    throw new Error("money must be integer cents");
+  }
+  return cents;
+}
+
+/** Integer cents as a German form value (200000 → "2000,00"). */
+export function centsToEuroInput(cents: number): string {
+  if (!Number.isInteger(cents)) {
+    throw new Error("money must be integer cents");
+  }
+  return (cents / 100).toFixed(2).replace(".", ",");
 }

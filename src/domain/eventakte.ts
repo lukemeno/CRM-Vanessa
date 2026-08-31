@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 import { event as eventTable } from "@/db/schema";
 import type { AppSession } from "@/db/types";
-import { BOOKED_WEEKEND } from "@/domain/calendar";
 import {
   addCalendarDays,
   addCalendarMonths,
@@ -15,29 +14,6 @@ export const STORNO_FULL_REFUND_MONTHS = 3;
 export const GUEST_COUNT_LOCKED_COPY =
   "Die Gästezahl kann bis 10 Tage vor dem Event geändert werden. Danach ist sie fest.";
 
-const WEEKDAY_SHORT_DE: Record<string, string> = {
-  monday: "Mo",
-  tuesday: "Di",
-  wednesday: "Mi",
-  thursday: "Do",
-  friday: "Fr",
-  saturday: "Sa",
-  sunday: "So",
-};
-
-function hourLabel(hour: number): string {
-  return `${String(hour).padStart(2, "0")}:00`;
-}
-
-/** Venue occupation copy from BOOKED_WEEKEND, not a settings row. */
-export function bookedLocationWindowCopy(): string {
-  const startDay =
-    WEEKDAY_SHORT_DE[BOOKED_WEEKEND.startWeekday] ?? BOOKED_WEEKEND.startWeekday;
-  const endDay =
-    WEEKDAY_SHORT_DE[BOOKED_WEEKEND.endWeekday] ?? BOOKED_WEEKEND.endWeekday;
-  return `${startDay} ${hourLabel(BOOKED_WEEKEND.startHour)} bis ${endDay} ${hourLabel(BOOKED_WEEKEND.endHour)}`;
-}
-
 export function guestCountLockOn(eventDate: string): string {
   return addCalendarDays(eventDate, -GUEST_COUNT_LOCK_DAYS);
 }
@@ -49,7 +25,7 @@ export function isGuestCountLocked(
   if (!eventDate) {
     return false;
   }
-  return calendarYmd(now) >= guestCountLockOn(eventDate);
+  return calendarYmd(now) > guestCountLockOn(eventDate);
 }
 
 export function stornoCutoffOn(eventDate: string): string {
@@ -86,6 +62,35 @@ export async function updateGuestCount(
   const [updated] = await db
     .update(eventTable)
     .set({ guestCount })
+    .where(eq(eventTable.id, eventId))
+    .returning();
+  if (!updated) {
+    throw new Error("event not found");
+  }
+  return updated;
+}
+
+function emptyToNull(value: string | null | undefined): string | null {
+  if (value == null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
+export async function updateEventContact(
+  db: AppSession,
+  eventId: string,
+  input: { email?: string | null; phone?: string | null },
+) {
+  const email = emptyToNull(input.email);
+  const phone = emptyToNull(input.phone);
+  if (!email && !phone) {
+    throw new Error("email or phone required");
+  }
+  const [updated] = await db
+    .update(eventTable)
+    .set({ email, phone })
     .where(eq(eventTable.id, eventId))
     .returning();
   if (!updated) {

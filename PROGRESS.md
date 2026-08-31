@@ -39,6 +39,17 @@
 - [x] Verloren cards show the lost reason; create inquiry requires email or phone
 - [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
 
+## PR-5 — Offer PDF
+
+- [x] `offer` + `offer_line` on the event; integer cents; 19% MwSt
+- [x] Offer number is the issue date `DDMMYYYY` (sample 21062026 = 21.06.2026), not the wedding, not `RE-`
+- [x] Eventakte Angebot section: editable lines, download German PDF (olive / leaf / serif+script)
+- [x] Fixture reproduces 21062026 totals (6350 net / 7556.50 gross)
+- [x] Guest count editable on the 10-day cutoff day; lock starts the next day
+- [x] Eventakte email and phone editable after create (no extra contact block)
+- [x] Eventakte is a sheet (couple names heading, sentence-case labels, no script chrome title)
+- [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
+
 ## Later PRs
 
-- Kalender UI, Angebote PDFs, IMAP, Heute content
+- Kalender UI, IMAP, Heute content, invoices/Anzahlung numbering UI

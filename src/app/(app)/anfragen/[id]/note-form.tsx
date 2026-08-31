@@ -27,7 +27,7 @@ export function NoteForm({
     <form action={action} className="space-y-3">
       <input type="hidden" name="id" value={eventId} />
       <label className="block">
-        <span className="mb-1.5 block text-xs uppercase tracking-wide text-olive/70">
+        <span className="mb-1.5 block text-sm text-olive-dark/80">
           Notiz
         </span>
         <textarea

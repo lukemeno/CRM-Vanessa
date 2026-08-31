@@ -29,6 +29,13 @@
       "when": 1788171969996,
       "tag": "0003_event-email-phone",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788175699102,
+      "tag": "0004_offer-tables",
+      "breakpoints": true
     }
   ]
 }

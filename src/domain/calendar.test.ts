@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BOOKED_WEEKEND,
+  bookedLocationWindowCopy,
   bookedWeekendPeriod,
   planningBlockPeriod,
   viewingAppointmentPeriod,
@@ -17,6 +18,7 @@ describe("BOOKED_WEEKEND", () => {
       endHour: 11,
       timeZone: APP_TIMEZONE,
     });
+    expect(bookedLocationWindowCopy()).toBe("Fr 11:00 bis So 11:00");
   });
 });
 

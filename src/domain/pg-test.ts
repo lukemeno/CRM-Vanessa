@@ -40,6 +40,8 @@ export async function resetDomainTables(database: TestDb): Promise<void> {
     truncate table
       "calendar_block",
       "appointment",
+      "offer_line",
+      "offer",
       "invoice",
       "invoice_counter",
       "event"

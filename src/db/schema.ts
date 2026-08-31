@@ -14,7 +14,7 @@ import {
 import type { AdapterAccountType } from "next-auth/adapters";
 import { tstzrange } from "./tstzrange";
 
-/** Auth.js tables plus v1 domain tables (event, invoice, appointment, calendar_block). */
+/** Auth.js tables plus v1 domain tables (event, offer, invoice, appointment, calendar_block). */
 
 export const EVENT_STATUSES = [
   "new",
@@ -218,6 +218,62 @@ export const invoiceCounter = pgTable("invoice_counter", {
   year: integer("year").primaryKey(),
   lastN: integer("last_n").notNull().default(0),
 });
+
+export const offer = pgTable(
+  "offer",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    eventId: uuid("event_id")
+      .notNull()
+      .unique()
+      .references(() => event.id, { onDelete: "cascade" }),
+    number: text("number").notNull(),
+    issuedOn: date("issued_on", { mode: "string" }).notNull(),
+    netCents: integer("net_cents").notNull(),
+    vatCents: integer("vat_cents").notNull(),
+    grossCents: integer("gross_cents").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    check(
+      "offer_gross_matches_parts",
+      sql`${table.grossCents} = ${table.netCents} + ${table.vatCents}`,
+    ),
+    check(
+      "offer_net_cents_nonnegative",
+      sql`${table.netCents} >= 0`,
+    ),
+  ],
+);
+
+export const offerLine = pgTable(
+  "offer_line",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    offerId: uuid("offer_id")
+      .notNull()
+      .references(() => offer.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    description: text("description").notNull(),
+    quantity: integer("quantity").notNull(),
+    unitNetCents: integer("unit_net_cents").notNull(),
+  },
+  (table) => [
+    check(
+      "offer_line_quantity_positive",
+      sql`${table.quantity} >= 1`,
+    ),
+    check(
+      "offer_line_unit_net_cents_nonnegative",
+      sql`${table.unitNetCents} >= 0`,
+    ),
+    check(
+      "offer_line_description_present",
+      sql`btrim(${table.description}) <> ''`,
+    ),
+  ],
+);
 
 export const invoice = pgTable(
   "invoice",
