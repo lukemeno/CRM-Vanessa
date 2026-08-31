@@ -5,7 +5,7 @@ import {
   setReservedUntilAction,
   type InquiryFormState,
 } from "@/app/(app)/anfragen/actions";
-import { formatDateTimeLocal } from "@/lib/timezone";
+import { formatBerlinDateTime, formatDateTimeLocal } from "@/lib/timezone";
 
 const initialState: InquiryFormState = {};
 
@@ -40,6 +40,13 @@ export function ReservedUntilForm({
           className={fieldClass}
         />
       </label>
+      {reservedUntil ? (
+        <p className="text-sm text-olive/80">
+          {formatBerlinDateTime(reservedUntil)}
+        </p>
+      ) : (
+        <p className="text-sm text-olive/70">Kein Vorbehalt.</p>
+      )}
       <p className="text-sm text-olive/70">
         Feld am Angebot, kein eigener Status. Leer speichern hebt den Vorbehalt
         auf.
