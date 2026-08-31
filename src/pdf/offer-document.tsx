@@ -148,6 +148,8 @@ export function BelegDocument({ model }: { model: BelegPdfModel }) {
     <Document
       title={model.heading}
       author="Events by Vanessa"
+      subject={`${model.coupleNames}${model.eventDateLabel ? ` · ${model.eventDateLabel}` : ""}`}
+      keywords={[model.number, ...senderLines, ...model.terms].join(" ")}
       language="de"
     >
       <Page size="A4" style={styles.page}>

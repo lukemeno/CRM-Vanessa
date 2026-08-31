@@ -35,7 +35,7 @@ describe("renderInvoicePdf", () => {
 
     const pdf = await renderInvoicePdf(model);
     expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
-    const text = pdf.toString("latin1");
+    const text = pdf.toString("latin1").replace(/\u0000/g, "");
     expect(text).toContain("RE-2026-001");
   });
 });
