@@ -86,9 +86,7 @@ export function OfferForm({
 
       {offerNumber ? (
         <p className="font-serif text-2xl text-olive">Angebot {offerNumber}</p>
-      ) : (
-        <p className="text-sm text-olive/70">Noch kein Angebot gespeichert.</p>
-      )}
+      ) : null}
 
       <label className="block max-w-xs">
         <span className="mb-1.5 block text-sm text-olive-dark/80">

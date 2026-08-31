@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
 import { StatusForm } from "@/app/(app)/anfragen/status-form";
 import { AddAppointmentForm } from "@/app/(app)/anfragen/[id]/add-appointment-form";
 import { ContactForm } from "@/app/(app)/anfragen/[id]/contact-form";
@@ -83,48 +82,48 @@ export default async function EventaktePage({
       </p>
 
       <div className="mt-8 rounded-2xl bg-paper px-10 py-8 shadow-[0_10px_30px_rgba(90,80,50,0.06)] max-lg:px-4 max-lg:py-5">
-        <div className="grid grid-cols-2 gap-x-12 gap-y-10 max-lg:grid-cols-1">
-          <SheetSection title="Paar">
+        <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-lg:grid-cols-1">
+          <div className="space-y-6">
             <dl className="space-y-3">
-              <SummaryRow
-                label="Datum"
-                value={
-                  inquiry.eventDate
+              <div>
+                <dt className="text-sm text-olive-dark/80">Datum</dt>
+                <dd className="mt-1 text-sm text-olive-dark">
+                  {inquiry.eventDate
                     ? formatCalendarDate(inquiry.eventDate)
-                    : "Kein Datum."
-                }
-              />
-              <SummaryRow
-                label="Quelle"
-                value={EVENT_SOURCE_LABELS[inquiry.source]}
-              />
+                    : "Kein Datum."}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-olive-dark/80">Quelle</dt>
+                <dd className="mt-1 text-sm text-olive-dark">
+                  {EVENT_SOURCE_LABELS[inquiry.source]}
+                </dd>
+              </div>
               {inquiry.status === "lost" ? (
-                <SummaryRow
-                  label="Grund"
-                  value={inquiry.lostReason?.trim() || "—"}
-                />
+                <div>
+                  <dt className="text-sm text-olive-dark/80">Grund</dt>
+                  <dd className="mt-1 text-sm text-olive-dark">
+                    {inquiry.lostReason?.trim() || "—"}
+                  </dd>
+                </div>
               ) : null}
             </dl>
-            <div className="mt-6">
-              <ContactForm
-                eventId={inquiry.id}
-                email={inquiry.email}
-                phone={inquiry.phone}
-              />
-            </div>
-            <div className="mt-6">
-              <GuestCountForm
-                eventId={inquiry.id}
-                guestCount={inquiry.guestCount}
-                locked={guestLocked}
-              />
-            </div>
-          </SheetSection>
+            <ContactForm
+              eventId={inquiry.id}
+              email={inquiry.email}
+              phone={inquiry.phone}
+            />
+            <GuestCountForm
+              eventId={inquiry.id}
+              guestCount={inquiry.guestCount}
+              locked={guestLocked}
+            />
+          </div>
 
-          <SheetSection title="Status">
+          <div>
             <StatusForm eventId={inquiry.id} status={inquiry.status} />
             {inquiry.status === "offer" ? (
-              <div className="mt-8 border-t border-olive/10 pt-6">
+              <div className="mt-8">
                 <ReservedUntilForm
                   eventId={inquiry.id}
                   reservedUntil={inquiry.reservedUntil}
@@ -135,26 +134,28 @@ export default async function EventaktePage({
                 Reserviert bis {formatBerlinDateTime(inquiry.reservedUntil)}
               </p>
             ) : null}
-          </SheetSection>
+          </div>
+        </div>
 
-          <SheetSection title="Angebot" wide>
-            <OfferForm
-              eventId={inquiry.id}
-              issuedOn={offer?.issuedOn ?? calendarYmd(now)}
-              offerNumber={offer?.number ?? null}
-              lines={
-                offer
-                  ? offer.lines.map((line) => ({
-                      description: line.description,
-                      quantity: line.quantity,
-                      unitNetCents: line.unitNetCents,
-                    }))
-                  : SAMPLE_CATALOG_LINES
-              }
-            />
-          </SheetSection>
+        <div className="mt-10 border-t border-olive/10 pt-8">
+          <OfferForm
+            eventId={inquiry.id}
+            issuedOn={offer?.issuedOn ?? calendarYmd(now)}
+            offerNumber={offer?.number ?? null}
+            lines={
+              offer
+                ? offer.lines.map((line) => ({
+                    description: line.description,
+                    quantity: line.quantity,
+                    unitNetCents: line.unitNetCents,
+                  }))
+                : SAMPLE_CATALOG_LINES
+            }
+          />
+        </div>
 
-          <SheetSection title="Standort und Storno">
+        <div className="mt-10 grid grid-cols-2 gap-x-16 gap-y-8 border-t border-olive/10 pt-8 max-lg:grid-cols-1">
+          <div>
             {booked && inquiry.eventDate ? (
               <p className="text-sm text-olive-dark">
                 Standortfenster: {bookedLocationWindowCopy()}
@@ -171,9 +172,9 @@ export default async function EventaktePage({
                 Storno-Frist erscheint nach dem Eventdatum.
               </p>
             )}
-          </SheetSection>
+          </div>
 
-          <SheetSection title="Termine">
+          <div>
             {appointments.length === 0 ? (
               <p className="text-sm text-olive/70">Keine Termine.</p>
             ) : (
@@ -195,39 +196,13 @@ export default async function EventaktePage({
               </ul>
             )}
             <AddAppointmentForm eventId={inquiry.id} />
-          </SheetSection>
+          </div>
+        </div>
 
-          <SheetSection title="Notiz">
-            <NoteForm eventId={inquiry.id} note={inquiry.note} />
-          </SheetSection>
+        <div className="mt-10 border-t border-olive/10 pt-8">
+          <NoteForm eventId={inquiry.id} note={inquiry.note} />
         </div>
       </div>
     </>
-  );
-}
-
-function SheetSection({
-  title,
-  children,
-  wide = false,
-}: {
-  title: string;
-  children: ReactNode;
-  wide?: boolean;
-}) {
-  return (
-    <section className={wide ? "col-span-2 max-lg:col-span-1" : undefined}>
-      <h2 className="font-serif text-xl text-olive">{title}</h2>
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-sm text-olive-dark/80">{label}</dt>
-      <dd className="mt-1 text-sm text-olive-dark">{value}</dd>
-    </div>
   );
 }

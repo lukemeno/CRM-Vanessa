@@ -4,10 +4,10 @@ export default function EventakteNotFound() {
   return (
     <>
       <h1 className="font-serif text-3xl text-olive">
-        Eventakte nicht gefunden
+        Anfrage nicht gefunden
       </h1>
       <p className="mt-2 text-sm text-foreground/80">
-        Diese Eventakte gibt es nicht oder sie wurde entfernt.
+        Diese Anfrage gibt es nicht oder sie wurde entfernt.
       </p>
       <p className="mt-6">
         <Link
