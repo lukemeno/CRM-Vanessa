@@ -8,7 +8,8 @@ import {
 } from "@/db/schema";
 import type { AppDb, AppSession } from "@/db/types";
 import { createEvent, markLost } from "@/domain/event";
-import { expireOfferHold, holdOfferWeekend } from "@/domain/calendar";
+import { bookSaturday, expireOfferHold, holdOfferWeekend } from "@/domain/calendar";
+import { isSaturdayYmd } from "@/domain/calendar-month";
 
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   new: "Neu",
@@ -134,6 +135,19 @@ export async function changeInquiryStatus(
   }
   if (status === "lost") {
     await markLost(db, eventId, lostReason ?? "");
+    return;
+  }
+  const current = await getInquiry(db, eventId);
+  if (!current) {
+    throw new Error("event not found");
+  }
+  if (
+    status === "booked" &&
+    current.status !== "booked" &&
+    current.eventDate &&
+    isSaturdayYmd(current.eventDate)
+  ) {
+    await bookSaturday(db, eventId, current.eventDate);
     return;
   }
   await db
