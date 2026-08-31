@@ -31,6 +31,7 @@ describe("offer PDF model", () => {
     expect(model.issuedOnLabel).toBe("21.06.2026");
     expect(model.coupleNames).toBe("Jana Hermes & Raphael Gerhards");
     expect(model.eventDateLabel).toBe("24.07.2027");
+    expect(model.eventDateLabel).not.toMatch(/Event/i);
     expect(model.locationName).toBe("Alte Hettnerfabrik");
     expect(model.locationWindow).toBe("Fr 11:00 bis So 11:00");
     expect(model.vatPercent).toBe(19);
@@ -53,10 +54,13 @@ describe("offer PDF model", () => {
     ]);
   });
 
-  it("keeps a botanical leaf asset in public/brand, not ellipse marks", () => {
-    const svg = readFileSync(path.resolve(OLIVE_LEAF_ASSET), "utf8");
-    expect(svg).toMatch(/<svg/i);
-    expect(svg).not.toMatch(/<ellipse/i);
-    expect(svg).toMatch(/<path/i);
+  it("keeps a botanical leaf PNG in public/brand, not ellipse marks", () => {
+    const png = readFileSync(path.resolve(OLIVE_LEAF_ASSET));
+    expect(png.subarray(0, 8)).toEqual(
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    );
+    const source = readFileSync(path.resolve("src/pdf/offer-leaf.tsx"), "utf8");
+    expect(source).not.toMatch(/Ellipse/);
+    expect(source).toMatch(/Image/);
   });
 });

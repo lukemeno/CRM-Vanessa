@@ -16,7 +16,7 @@ export const OFFER_BELEG_TERMS = [
   "Die Gästezahl kann bis 10 Tage vor dem Event geändert werden.",
 ] as const;
 
-export const OLIVE_LEAF_ASSET = "public/brand/olive-leaf.svg";
+export const OLIVE_LEAF_ASSET = "public/brand/olive-leaf.png";
 
 export type BelegLine = {
   description: string;

@@ -29,6 +29,8 @@ describe("renderOfferPdf", () => {
     expect(text).toContain("01573 8273034");
     expect(text).toContain("vanessa@events-altehettnerfabrik.de");
     expect(text).toContain("Die Anzahlung betr");
+    expect(text).toContain("24.07.2027");
     expect(text).not.toContain("Event 24.07.2027");
+    expect(text).toMatch(/\/Subtype\s*\/Image/);
   });
 });

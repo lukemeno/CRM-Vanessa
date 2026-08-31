@@ -30,6 +30,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
+  leaf: {
+    width: 86,
+    height: 110,
+    marginTop: -8,
+    marginRight: -6,
+  },
   events: {
     fontSize: 22,
     letterSpacing: 8,
@@ -149,7 +155,14 @@ export function BelegDocument({ model }: { model: BelegPdfModel }) {
       title={model.heading}
       author="Events by Vanessa"
       subject={`${model.coupleNames}${model.eventDateLabel ? ` · ${model.eventDateLabel}` : ""}`}
-      keywords={[model.number, ...senderLines, ...model.terms].join(" ")}
+      keywords={[
+        model.number,
+        model.eventDateLabel,
+        ...senderLines,
+        ...model.terms,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       language="de"
     >
       <Page size="A4" style={styles.page}>
@@ -165,7 +178,9 @@ export function BelegDocument({ model }: { model: BelegPdfModel }) {
               ))}
             </View>
           </View>
-          <OfferLeaf />
+          <View style={styles.leaf}>
+            <OfferLeaf />
+          </View>
         </View>
         <View style={styles.rule} />
         <Text style={styles.title}>{model.heading}</Text>

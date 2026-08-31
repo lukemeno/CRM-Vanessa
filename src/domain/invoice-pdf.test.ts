@@ -43,6 +43,7 @@ describe("invoice PDF model", () => {
     expect(model.heading).toBe("Anzahlung RE-2026-001");
     expect(model.coupleNames).toBe("Jana Hermes & Raphael Gerhards");
     expect(model.eventDateLabel).toBe("24.07.2027");
+    expect(model.eventDateLabel).not.toMatch(/Event/i);
     expect(model.lines[0]?.description).toBe("Anzahlung");
     expect(model.vatPercent).toBe(19);
     expect(model.netCents).toBe(84_034);
