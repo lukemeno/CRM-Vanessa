@@ -49,6 +49,15 @@ export async function sendVerificationRequest({
   }
 }
 
+function escapeHtmlAttr(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
 function textBody(url: string) {
   return [
     "Events by Vanessa",
@@ -72,7 +81,7 @@ function htmlBody(url: string) {
           Hier ist dein Anmeldelink für die Betriebs-App.
         </p>
         <p style="text-align:center;margin:28px 0;">
-          <a href="${url}" style="background:#5c6540;color:#fffdf8;text-decoration:none;padding:12px 22px;border-radius:999px;font-family:Helvetica,Arial,sans-serif;font-size:15px;">
+          <a href="${escapeHtmlAttr(url)}" style="background:#5c6540;color:#fffdf8;text-decoration:none;padding:12px 22px;border-radius:999px;font-family:Helvetica,Arial,sans-serif;font-size:15px;">
             Jetzt anmelden
           </a>
         </p>

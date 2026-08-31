@@ -8,7 +8,7 @@ Diese erste Version ist nur das Gerüst: Magic-Link-Login (Allowlist) und eine l
 
 - Node.js 20 oder neuer
 - [pnpm](https://pnpm.io/) 10
-- PostgreSQL in der **EU** — vorgesehen sind [Fly Postgres](https://fly.io/docs/postgres/) oder [Railway](https://railway.app/) in **Frankfurt**. Nicht in den USA hosten. Dieses Repo deployt nichts.
+Postgres in der **EU** — vorgesehen sind [Fly Postgres](https://fly.io/docs/postgres/) oder [Railway](https://railway.app/) in **Frankfurt**. Nicht in den USA hosten. In der Connection-URL `sslmode=require` setzen, sobald der Host TLS verlangt. Dieses Repo deployt nichts.
 
 ## Lokal starten
 

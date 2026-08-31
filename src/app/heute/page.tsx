@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { BrandMark } from "@/components/brand-mark";
 import { SignOutButton } from "@/components/sign-out-button";
+import { isEmailAllowed } from "@/lib/allowlist";
 import { formatToday } from "@/lib/timezone";
 import { redirect } from "next/navigation";
 
@@ -31,7 +32,10 @@ export const dynamic = "force-dynamic";
 
 export default async function HeutePage() {
   const session = await auth();
-  if (!session?.user) {
+  if (
+    !session?.user?.email ||
+    !isEmailAllowed(session.user.email)
+  ) {
     redirect("/");
   }
 

@@ -21,7 +21,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authenticatorsTable: authenticators,
   }),
   session: { strategy: "jwt" },
-  trustHost: true,
+  trustHost: process.env.NODE_ENV !== "production" || Boolean(process.env.AUTH_URL),
   pages: {
     signIn: "/",
     error: "/",
@@ -38,6 +38,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user }) {
       return Boolean(user.email && isEmailAllowed(user.email));
+    },
+    async jwt({ token }) {
+      if (token.email && !isEmailAllowed(token.email)) {
+        return {};
+      }
+      return token;
+    },
+    async session({ session }) {
+      if (!session.user?.email || !isEmailAllowed(session.user.email)) {
+        return { ...session, user: { ...session.user, email: undefined } };
+      }
+      return session;
     },
   },
 });

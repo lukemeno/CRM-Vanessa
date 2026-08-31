@@ -5,7 +5,13 @@ import { requestMagicLink, type LoginState } from "@/app/login-actions";
 
 const initialState: LoginState = {};
 
-export function LoginForm({ showDevHint }: { showDevHint: boolean }) {
+export function LoginForm({
+  showDevHint,
+  initialError,
+}: {
+  showDevHint: boolean;
+  initialError?: string;
+}) {
   const [state, action, pending] = useActionState(
     requestMagicLink,
     initialState,
@@ -14,11 +20,14 @@ export function LoginForm({ showDevHint }: { showDevHint: boolean }) {
   if (state.sent) {
     return (
       <p className="rounded-xl bg-cream px-4 py-3 text-sm leading-relaxed text-olive-dark">
-        Wir haben dir einen Anmeldelink per E-Mail geschickt. Bitte prüfe dein
-        Postfach.
+        {showDevHint
+          ? "Der Anmeldelink steht in der Serverkonsole. Es wurde keine Mail verschickt."
+          : "Wir haben dir einen Anmeldelink per E-Mail geschickt. Bitte prüfe dein Postfach."}
       </p>
     );
   }
+
+  const error = state.error ?? initialError;
 
   return (
     <form action={action} className="space-y-4">
@@ -36,9 +45,9 @@ export function LoginForm({ showDevHint }: { showDevHint: boolean }) {
         />
       </label>
 
-      {state.error ? (
+      {error ? (
         <p className="text-sm text-red-800" role="alert">
-          {state.error}
+          {error}
         </p>
       ) : null}
 

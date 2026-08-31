@@ -1,11 +1,18 @@
 import { BrandMark } from "@/components/brand-mark";
 import { LoginForm } from "@/components/login-form";
 import { OliveBranch } from "@/components/olive-branch";
+import { authErrorFromSearchParam } from "@/lib/auth-errors";
 import { isDevBypassEnabled } from "@/lib/dev-bypass";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <main className="relative flex min-h-full items-center justify-center overflow-hidden px-6 py-16">
       <OliveBranch className="pointer-events-none absolute -top-6 right-0 h-56 w-44 text-olive/35" />
@@ -23,7 +30,10 @@ export default function HomePage() {
         <p className="mt-2 mb-6 text-sm leading-relaxed text-foreground/80">
           Nur für Vanessa und Luke. Wir schicken dir einen Link per E-Mail.
         </p>
-        <LoginForm showDevHint={isDevBypassEnabled()} />
+        <LoginForm
+          showDevHint={isDevBypassEnabled()}
+          initialError={authErrorFromSearchParam(error)}
+        />
       </section>
     </main>
   );

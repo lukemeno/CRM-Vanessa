@@ -1,7 +1,7 @@
 "use server";
 
 import { signIn } from "@/auth";
-import { AUTH_ERRORS } from "@/lib/auth-errors";
+import { AUTH_ERRORS, magicLinkSendSucceeded } from "@/lib/auth-errors";
 import { evaluateMagicLinkRequest } from "@/lib/magic-link-request";
 
 export type LoginState = {
@@ -19,13 +19,30 @@ export async function requestMagicLink(
   }
 
   try {
-    await signIn("nodemailer", {
+    const redirectUrl = await signIn("nodemailer", {
       email: decision.email,
       redirect: false,
       redirectTo: "/heute",
     });
+
+    if (
+      typeof redirectUrl !== "string" ||
+      !magicLinkSendSucceeded(redirectUrl)
+    ) {
+      return { error: AUTH_ERRORS.sendFailed };
+    }
+
     return { sent: true };
-  } catch {
+  } catch (error) {
+    if (
+      error !== null &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
     return { error: AUTH_ERRORS.sendFailed };
   }
 }
