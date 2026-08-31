@@ -8,6 +8,7 @@ import {
 } from "@/db/schema";
 import type { AppDb, AppSession } from "@/db/types";
 import { createEvent, markLost } from "@/domain/event";
+import { expireOfferHold, holdOfferWeekend } from "@/domain/calendar";
 
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   new: "Neu",
@@ -164,6 +165,7 @@ export async function setReservedUntil(
   db: AppDb,
   eventId: string,
   reservedUntil: Date | null,
+  opts: { now: Date },
 ) {
   const [updated] = await db
     .update(eventTable)
@@ -172,6 +174,11 @@ export async function setReservedUntil(
     .returning();
   if (!updated) {
     throw new Error("event not found");
+  }
+  if (updated.eventDate) {
+    await holdOfferWeekend(db, eventId, updated.eventDate, opts);
+  } else {
+    await expireOfferHold(db, eventId, opts);
   }
   return updated;
 }

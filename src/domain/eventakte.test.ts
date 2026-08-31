@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { event as eventTable } from "@/db/schema";
+import { calendarBlock, event as eventTable } from "@/db/schema";
 import { bookSaturday, BOOKED_WEEKEND, scheduleViewing } from "@/domain/calendar";
 import { CalendarConflictError } from "@/domain/errors";
 import { createEvent } from "@/domain/event";
@@ -14,7 +14,7 @@ import {
   stornoWindowCopy,
   updateGuestCount,
 } from "@/domain/eventakte";
-import { createInquiry } from "@/domain/inquiry";
+import { changeInquiryStatus, createInquiry, setReservedUntil } from "@/domain/inquiry";
 import { zonedInstant } from "@/lib/timezone";
 import { closeTestDb, getTestDb, resetDomainTables, type TestDb } from "@/domain/pg-test";
 
@@ -169,5 +169,65 @@ describe("viewing writer from the Eventakte", () => {
         start: new Date("2026-08-29T12:00:00.000Z"),
       }),
     ).rejects.toBeInstanceOf(CalendarConflictError);
+  });
+});
+
+describe("reserved_until on the Eventakte", () => {
+  let db: TestDb;
+
+  beforeAll(async () => {
+    db = await getTestDb();
+  });
+
+  afterAll(async () => {
+    await closeTestDb();
+  });
+
+  beforeEach(async () => {
+    await resetDomainTables(db);
+  });
+
+  it("writes a reserved weekend hold when reserved_until is in the future", async () => {
+    const row = await createInquiry(db, {
+      coupleAName: "Anna",
+      coupleBName: "Ben",
+      eventDate: "2026-08-29",
+      email: "anna@example.com",
+    });
+    await changeInquiryStatus(db, row.id, "offer");
+
+    await setReservedUntil(db, row.id, new Date("2026-09-01T10:00:00.000Z"), {
+      now: new Date("2026-08-10T10:00:00.000Z"),
+    });
+
+    const blocks = await db
+      .select()
+      .from(calendarBlock)
+      .where(eq(calendarBlock.eventId, row.id));
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]?.source).toBe("reserved");
+  });
+
+  it("clears the reserved hold when reserved_until is emptied", async () => {
+    const row = await createInquiry(db, {
+      coupleAName: "Anna",
+      coupleBName: "Ben",
+      eventDate: "2026-08-29",
+      email: "anna@example.com",
+    });
+    await changeInquiryStatus(db, row.id, "offer");
+    await setReservedUntil(db, row.id, new Date("2026-09-01T10:00:00.000Z"), {
+      now: new Date("2026-08-10T10:00:00.000Z"),
+    });
+
+    await setReservedUntil(db, row.id, null, {
+      now: new Date("2026-08-10T10:00:00.000Z"),
+    });
+
+    const blocks = await db
+      .select()
+      .from(calendarBlock)
+      .where(eq(calendarBlock.eventId, row.id));
+    expect(blocks).toHaveLength(0);
   });
 });

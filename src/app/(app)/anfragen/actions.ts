@@ -277,7 +277,9 @@ export async function setReservedUntilAction(
   }
 
   try {
-    await setReservedUntil(db, parsed.data.id, reservedUntil);
+    await setReservedUntil(db, parsed.data.id, reservedUntil, {
+      now: new Date(),
+    });
   } catch (error) {
     return { error: germanDomainError(error) };
   }
