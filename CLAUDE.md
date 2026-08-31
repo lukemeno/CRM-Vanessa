@@ -35,8 +35,8 @@ pnpm test
 - Status values are only `new|viewing|offer|booked|planning|done|lost`. German label for `done` is **Erledigt**. `reserved_until` is a field, not a status. Lost requires `lost_reason`.
 - Inquiry source is only `website|bridebook|manual|other` (default `manual`).
 - Event contact is `event.email` and `event.phone` (nullable text, no contacts table). Creating an inquiry requires at least one.
-- Guest count is editable until 10 days before `event_date`, then locked. Storno: full refund until 3 months before `event_date`, then Anzahlung kept.
-- `/anfragen/[id]` is the Eventakte. Do not add a second CRM at `/events/[id]`.
+- Guest count is editable through the calendar day 10 days before `event_date`; lock starts the next day. Storno: full refund until 3 months before `event_date`, then Anzahlung kept.
+- Eventakte is a sheet at `/anfragen/[id]` (couple names as heading). Email and phone are editable there after create. Do not add a second CRM at `/events/[id]`.
 
 ## Forbidden
 

@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { StatusForm } from "@/app/(app)/anfragen/status-form";
 import { AddAppointmentForm } from "@/app/(app)/anfragen/[id]/add-appointment-form";
+import { ContactForm } from "@/app/(app)/anfragen/[id]/contact-form";
 import { GuestCountForm } from "@/app/(app)/anfragen/[id]/guest-count-form";
 import { NoteForm } from "@/app/(app)/anfragen/[id]/note-form";
-import { ReservedUntilForm } from "@/app/(app)/anfragen/[id]/reserved-until-form";
 import { OfferForm } from "@/app/(app)/anfragen/[id]/offer-form";
+import { ReservedUntilForm } from "@/app/(app)/anfragen/[id]/reserved-until-form";
 import { db } from "@/db/client";
 import {
   APPOINTMENT_KIND_LABELS,
@@ -40,7 +41,7 @@ export async function generateMetadata({
   const { id } = await params;
   const inquiry = await getInquiry(db, id);
   if (!inquiry) {
-    return { title: "Eventakte" };
+    return { title: "Anfrage" };
   }
   return {
     title: `${inquiry.coupleAName} & ${inquiry.coupleBName}`,
@@ -61,7 +62,10 @@ export default async function EventaktePage({
   const now = new Date();
   const appointments = await listAppointments(db, inquiry.id);
   const guestLocked = isGuestCountLocked(inquiry.eventDate, now);
-  const booked = inquiry.status === "booked" || inquiry.status === "planning" || inquiry.status === "done";
+  const booked =
+    inquiry.status === "booked" ||
+    inquiry.status === "planning" ||
+    inquiry.status === "done";
   const offer = await getOfferForEvent(db, inquiry.id);
 
   return (
@@ -71,139 +75,138 @@ export default async function EventaktePage({
           ← Anfragen
         </Link>
       </p>
-      <p className="mt-4 font-script text-2xl text-olive">Eventakte</p>
-      <h1 className="mt-1 font-serif text-3xl text-olive">
+      <h1 className="mt-6 font-serif text-3xl text-olive">
         {inquiry.coupleAName} & {inquiry.coupleBName}
       </h1>
       <p className="mt-2 text-sm text-foreground/80">
         Status: {EVENT_STATUS_LABELS[inquiry.status]}
       </p>
 
-      <div className="mt-8 grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-        <PaperCard title="Paar">
-          <dl className="space-y-3">
-            <SummaryRow
-              label="Datum"
-              value={
-                inquiry.eventDate
-                  ? formatCalendarDate(inquiry.eventDate)
-                  : "Kein Datum."
-              }
-            />
-            <SummaryRow
-              label="Quelle"
-              value={EVENT_SOURCE_LABELS[inquiry.source]}
-            />
-            <SummaryRow
-              label="E-Mail"
-              value={inquiry.email?.trim() || "Keine E-Mail."}
-            />
-            <SummaryRow
-              label="Telefon"
-              value={inquiry.phone?.trim() || "Kein Telefon."}
-            />
-            {inquiry.status === "lost" ? (
+      <div className="mt-8 rounded-2xl bg-paper px-10 py-8 shadow-[0_10px_30px_rgba(90,80,50,0.06)] max-lg:px-4 max-lg:py-5">
+        <div className="grid grid-cols-2 gap-x-12 gap-y-10 max-lg:grid-cols-1">
+          <SheetSection title="Paar">
+            <dl className="space-y-3">
               <SummaryRow
-                label="Grund"
-                value={inquiry.lostReason?.trim() || "—"}
+                label="Datum"
+                value={
+                  inquiry.eventDate
+                    ? formatCalendarDate(inquiry.eventDate)
+                    : "Kein Datum."
+                }
               />
-            ) : null}
-          </dl>
-          <div className="mt-6">
-            <GuestCountForm
-              eventId={inquiry.id}
-              guestCount={inquiry.guestCount}
-              locked={guestLocked}
-            />
-          </div>
-        </PaperCard>
-
-        <PaperCard title="Status">
-          <StatusForm eventId={inquiry.id} status={inquiry.status} />
-          {inquiry.status === "offer" ? (
-            <div className="mt-8 border-t border-olive/10 pt-6">
-              <ReservedUntilForm
+              <SummaryRow
+                label="Quelle"
+                value={EVENT_SOURCE_LABELS[inquiry.source]}
+              />
+              {inquiry.status === "lost" ? (
+                <SummaryRow
+                  label="Grund"
+                  value={inquiry.lostReason?.trim() || "—"}
+                />
+              ) : null}
+            </dl>
+            <div className="mt-6">
+              <ContactForm
                 eventId={inquiry.id}
-                reservedUntil={inquiry.reservedUntil}
+                email={inquiry.email}
+                phone={inquiry.phone}
               />
             </div>
-          ) : inquiry.reservedUntil ? (
-            <p className="mt-4 text-sm text-olive/80">
-              Reserviert bis{" "}
-              {formatBerlinDateTime(inquiry.reservedUntil)}
-            </p>
-          ) : null}
-        </PaperCard>
+            <div className="mt-6">
+              <GuestCountForm
+                eventId={inquiry.id}
+                guestCount={inquiry.guestCount}
+                locked={guestLocked}
+              />
+            </div>
+          </SheetSection>
 
-        <PaperCard title="Angebot" wide>
-          <OfferForm
-            eventId={inquiry.id}
-            issuedOn={offer?.issuedOn ?? calendarYmd(now)}
-            offerNumber={offer?.number ?? null}
-            lines={
-              offer
-                ? offer.lines.map((line) => ({
-                    description: line.description,
-                    quantity: line.quantity,
-                    unitNetCents: line.unitNetCents,
-                  }))
-                : SAMPLE_CATALOG_LINES
-            }
-          />
-        </PaperCard>
+          <SheetSection title="Status">
+            <StatusForm eventId={inquiry.id} status={inquiry.status} />
+            {inquiry.status === "offer" ? (
+              <div className="mt-8 border-t border-olive/10 pt-6">
+                <ReservedUntilForm
+                  eventId={inquiry.id}
+                  reservedUntil={inquiry.reservedUntil}
+                />
+              </div>
+            ) : inquiry.reservedUntil ? (
+              <p className="mt-4 text-sm text-olive/80">
+                Reserviert bis {formatBerlinDateTime(inquiry.reservedUntil)}
+              </p>
+            ) : null}
+          </SheetSection>
 
-        <PaperCard title="Standort und Storno">
-          {booked && inquiry.eventDate ? (
-            <p className="text-sm text-olive-dark">
-              Standortfenster: {bookedLocationWindowCopy()}
-            </p>
-          ) : (
-            <p className="text-sm text-olive/70">Noch nicht gebucht.</p>
-          )}
-          {inquiry.eventDate ? (
-            <p className="mt-3 text-sm text-olive-dark">
-              {stornoWindowCopy(inquiry.eventDate)}
-            </p>
-          ) : (
-            <p className="mt-3 text-sm text-olive/70">
-              Storno-Frist erscheint nach dem Eventdatum.
-            </p>
-          )}
-        </PaperCard>
+          <SheetSection title="Angebot" wide>
+            <OfferForm
+              eventId={inquiry.id}
+              issuedOn={offer?.issuedOn ?? calendarYmd(now)}
+              offerNumber={offer?.number ?? null}
+              lines={
+                offer
+                  ? offer.lines.map((line) => ({
+                      description: line.description,
+                      quantity: line.quantity,
+                      unitNetCents: line.unitNetCents,
+                    }))
+                  : SAMPLE_CATALOG_LINES
+              }
+            />
+          </SheetSection>
 
-        <PaperCard title="Termine">
-          {appointments.length === 0 ? (
-            <p className="text-sm text-olive/70">Keine Termine.</p>
-          ) : (
-            <ul className="space-y-3">
-              {appointments.map((item) => (
-                <li
-                  key={item.id}
-                  className="rounded-xl border border-olive/10 bg-cream px-4 py-3"
-                >
-                  <p className="text-sm font-medium text-olive-dark">
-                    {APPOINTMENT_KIND_LABELS[item.kind]}
-                  </p>
-                  <p className="mt-1 text-sm text-olive/80">
-                    {formatBerlinDateTime(item.period.start)} –{" "}
-                    {formatBerlinTime(item.period.end)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-          <AddAppointmentForm eventId={inquiry.id} />
-        </PaperCard>
+          <SheetSection title="Standort und Storno">
+            {booked && inquiry.eventDate ? (
+              <p className="text-sm text-olive-dark">
+                Standortfenster: {bookedLocationWindowCopy()}
+              </p>
+            ) : (
+              <p className="text-sm text-olive/70">Noch nicht gebucht.</p>
+            )}
+            {inquiry.eventDate ? (
+              <p className="mt-3 text-sm text-olive-dark">
+                {stornoWindowCopy(inquiry.eventDate)}
+              </p>
+            ) : (
+              <p className="mt-3 text-sm text-olive/70">
+                Storno-Frist erscheint nach dem Eventdatum.
+              </p>
+            )}
+          </SheetSection>
 
-        <PaperCard title="Notiz">
-          <NoteForm eventId={inquiry.id} note={inquiry.note} />
-        </PaperCard>
+          <SheetSection title="Termine">
+            {appointments.length === 0 ? (
+              <p className="text-sm text-olive/70">Keine Termine.</p>
+            ) : (
+              <ul className="space-y-3">
+                {appointments.map((item) => (
+                  <li
+                    key={item.id}
+                    className="rounded-xl border border-olive/10 bg-cream px-4 py-3"
+                  >
+                    <p className="text-sm font-medium text-olive-dark">
+                      {APPOINTMENT_KIND_LABELS[item.kind]}
+                    </p>
+                    <p className="mt-1 text-sm text-olive/80">
+                      {formatBerlinDateTime(item.period.start)} –{" "}
+                      {formatBerlinTime(item.period.end)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <AddAppointmentForm eventId={inquiry.id} />
+          </SheetSection>
+
+          <SheetSection title="Notiz">
+            <NoteForm eventId={inquiry.id} note={inquiry.note} />
+          </SheetSection>
+        </div>
       </div>
     </>
   );
 }
 
-function PaperCard({
+function SheetSection({
   title,
   children,
   wide = false,
@@ -213,9 +216,7 @@ function PaperCard({
   wide?: boolean;
 }) {
   return (
-    <section
-      className={`rounded-2xl bg-paper px-6 py-5 shadow-[0_10px_30px_rgba(90,80,50,0.06)] ${wide ? "col-span-2 max-lg:col-span-1" : ""}`}
-    >
+    <section className={wide ? "col-span-2 max-lg:col-span-1" : undefined}>
       <h2 className="font-serif text-xl text-olive">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
@@ -225,7 +226,7 @@ function PaperCard({
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-olive/70">{label}</dt>
+      <dt className="text-sm text-olive-dark/80">{label}</dt>
       <dd className="mt-1 text-sm text-olive-dark">{value}</dd>
     </div>
   );

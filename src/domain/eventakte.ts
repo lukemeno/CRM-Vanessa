@@ -49,7 +49,7 @@ export function isGuestCountLocked(
   if (!eventDate) {
     return false;
   }
-  return calendarYmd(now) >= guestCountLockOn(eventDate);
+  return calendarYmd(now) > guestCountLockOn(eventDate);
 }
 
 export function stornoCutoffOn(eventDate: string): string {
@@ -86,6 +86,35 @@ export async function updateGuestCount(
   const [updated] = await db
     .update(eventTable)
     .set({ guestCount })
+    .where(eq(eventTable.id, eventId))
+    .returning();
+  if (!updated) {
+    throw new Error("event not found");
+  }
+  return updated;
+}
+
+function emptyToNull(value: string | null | undefined): string | null {
+  if (value == null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
+export async function updateEventContact(
+  db: AppSession,
+  eventId: string,
+  input: { email?: string | null; phone?: string | null },
+) {
+  const email = emptyToNull(input.email);
+  const phone = emptyToNull(input.phone);
+  if (!email && !phone) {
+    throw new Error("email or phone required");
+  }
+  const [updated] = await db
+    .update(eventTable)
+    .set({ email, phone })
     .where(eq(eventTable.id, eventId))
     .returning();
   if (!updated) {

@@ -10,7 +10,7 @@ import {
   scheduleViewing,
 } from "@/domain/calendar";
 import { CalendarConflictError } from "@/domain/errors";
-import { GUEST_COUNT_LOCKED_COPY, updateGuestCount } from "@/domain/eventakte";
+import { GUEST_COUNT_LOCKED_COPY, updateGuestCount, updateEventContact } from "@/domain/eventakte";
 import {
   changeInquiryStatus,
   createInquiry,
@@ -48,6 +48,11 @@ const eventIdSchema = z.object({
 
 const guestCountSchema = eventIdSchema.extend({
   guestCount: z.string().optional(),
+});
+
+const contactSchema = eventIdSchema.extend({
+  email: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 const noteSchema = eventIdSchema.extend({
@@ -241,6 +246,34 @@ export async function updateGuestCountAction(
 
   try {
     await updateGuestCount(db, parsed.data.id, guestCount, { now: new Date() });
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+export async function updateEventContactAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = contactSchema.safeParse({
+    id: formData.get("id"),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  try {
+    await updateEventContact(db, parsed.data.id, {
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+    });
   } catch (error) {
     return { error: germanDomainError(error) };
   }

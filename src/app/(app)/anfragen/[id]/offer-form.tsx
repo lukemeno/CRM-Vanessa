@@ -91,7 +91,7 @@ export function OfferForm({
       )}
 
       <label className="block max-w-xs">
-        <span className="mb-1.5 block text-xs uppercase tracking-wide text-olive/70">
+        <span className="mb-1.5 block text-sm text-olive-dark/80">
           Ausstellungsdatum
         </span>
         <input
@@ -109,7 +109,7 @@ export function OfferForm({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead>
-            <tr className="text-xs uppercase tracking-wide text-olive/70">
+            <tr className="text-sm text-olive-dark/80">
               <th className="pb-2 pr-3 font-medium">Beschreibung</th>
               <th className="w-24 pb-2 pr-3 font-medium">Menge</th>
               <th className="w-40 pb-2 pr-3 font-medium">Einzelpreis netto</th>

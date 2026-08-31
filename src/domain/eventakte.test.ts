@@ -13,6 +13,7 @@ import {
   stornoCutoffOn,
   stornoWindowCopy,
   updateGuestCount,
+  updateEventContact,
 } from "@/domain/eventakte";
 import { changeInquiryStatus, createInquiry, setReservedUntil } from "@/domain/inquiry";
 import { zonedInstant } from "@/lib/timezone";
@@ -23,12 +24,18 @@ describe("guest count lock", () => {
     expect(guestCountLockOn("2026-09-20")).toBe("2026-09-10");
   });
 
-  it("stays editable 11 days before and locks at 10 days", () => {
+  it("stays editable on the cutoff day and locks the day after", () => {
     expect(
       isGuestCountLocked("2026-09-20", zonedInstant("2026-09-09", 12)),
     ).toBe(false);
     expect(
       isGuestCountLocked("2026-09-20", zonedInstant("2026-09-10", 0)),
+    ).toBe(false);
+    expect(
+      isGuestCountLocked("2026-09-20", zonedInstant("2026-09-10", 23)),
+    ).toBe(false);
+    expect(
+      isGuestCountLocked("2026-09-20", zonedInstant("2026-09-11", 0)),
     ).toBe(true);
     expect(
       isGuestCountLocked("2026-09-20", zonedInstant("2026-09-19", 18)),
@@ -111,7 +118,22 @@ describe("updateGuestCount", () => {
     expect(updated.guestCount).toBe(90);
   });
 
-  it("rejects a guest-count change on the 10-day lock", async () => {
+  it("allows a guest-count change on the cutoff day", async () => {
+    const row = await createInquiry(db, {
+      coupleAName: "Anna",
+      coupleBName: "Ben",
+      eventDate: "2026-09-20",
+      guestCount: 80,
+      email: "anna@example.com",
+    });
+
+    const updated = await updateGuestCount(db, row.id, 90, {
+      now: zonedInstant("2026-09-10", 9),
+    });
+    expect(updated.guestCount).toBe(90);
+  });
+
+  it("rejects a guest-count change the day after the cutoff", async () => {
     const row = await createInquiry(db, {
       coupleAName: "Anna",
       coupleBName: "Ben",
@@ -122,7 +144,7 @@ describe("updateGuestCount", () => {
 
     await expect(
       updateGuestCount(db, row.id, 90, {
-        now: zonedInstant("2026-09-10", 9),
+        now: zonedInstant("2026-09-11", 0),
       }),
     ).rejects.toThrow(/guest_count locked/);
 
@@ -229,5 +251,48 @@ describe("reserved_until on the Eventakte", () => {
       .from(calendarBlock)
       .where(eq(calendarBlock.eventId, row.id));
     expect(blocks).toHaveLength(0);
+  });
+});
+
+describe("updateEventContact", () => {
+  let db: TestDb;
+
+  beforeAll(async () => {
+    db = await getTestDb();
+  });
+
+  afterAll(async () => {
+    await closeTestDb();
+  });
+
+  beforeEach(async () => {
+    await resetDomainTables(db);
+  });
+
+  it("saves email and phone after create", async () => {
+    const row = await createInquiry(db, {
+      coupleAName: "Jana Hermes",
+      coupleBName: "Raphael Gerhards",
+      email: "jana@example.com",
+    });
+
+    const updated = await updateEventContact(db, row.id, {
+      email: "jana.hermes@example.com",
+      phone: "02253 123456",
+    });
+    expect(updated.email).toBe("jana.hermes@example.com");
+    expect(updated.phone).toBe("02253 123456");
+  });
+
+  it("still requires at least email or phone", async () => {
+    const row = await createInquiry(db, {
+      coupleAName: "Anna",
+      coupleBName: "Ben",
+      phone: "0171 0000000",
+    });
+
+    await expect(
+      updateEventContact(db, row.id, { email: "  ", phone: "" }),
+    ).rejects.toThrow(/email or phone required/);
   });
 });
