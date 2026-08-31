@@ -17,8 +17,8 @@ export default function NeueAnfragePage() {
       </p>
       <h1 className="mt-3 font-serif text-3xl text-olive">Neue Anfrage</h1>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/80">
-        Zwei Namen genügen. Datum, Gästezahl und Notiz können später ergänzt
-        werden. Die Anfrage landet unter Neu.
+        Zwei Namen und E-Mail oder Telefon. Datum, Gästezahl und Notiz können
+        später ergänzt werden. Die Anfrage landet unter Neu.
       </p>
       <CreateInquiryForm />
     </>

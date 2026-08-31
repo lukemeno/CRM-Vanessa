@@ -64,6 +64,30 @@ export function CreateInquiryForm() {
       </label>
 
       <label className="block">
+        <span className="mb-1.5 block text-sm text-olive-dark/80">E-Mail</span>
+        <input
+          name="email"
+          type="email"
+          autoComplete="off"
+          className={fieldClass}
+        />
+      </label>
+
+      <label className="block">
+        <span className="mb-1.5 block text-sm text-olive-dark/80">Telefon</span>
+        <input
+          name="phone"
+          type="tel"
+          autoComplete="off"
+          className={fieldClass}
+        />
+      </label>
+
+      <p className="text-sm text-olive/70">
+        Mindestens E-Mail oder Telefon, damit Vanessa das Paar erreichen kann.
+      </p>
+
+      <label className="block">
         <span className="mb-1.5 block text-sm text-olive-dark/80">Quelle</span>
         <select name="source" defaultValue="manual" className={fieldClass}>
           {EVENT_SOURCES.map((source) => (

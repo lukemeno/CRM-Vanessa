@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   APP_TIMEZONE,
   addCalendarDays,
+  addCalendarMonths,
+  calendarYmd,
   formatCalendarDate,
   formatToday,
   yearInTimeZone,
@@ -34,6 +36,16 @@ describe("timezone", () => {
   it("adds whole calendar days without using a timezone clock", () => {
     expect(addCalendarDays("2026-08-29", -1)).toBe("2026-08-28");
     expect(addCalendarDays("2026-08-29", 1)).toBe("2026-08-30");
+  });
+
+  it("subtracts whole calendar months and clamps the day", () => {
+    expect(addCalendarMonths("2026-09-12", -3)).toBe("2026-06-12");
+    expect(addCalendarMonths("2026-05-31", -3)).toBe("2026-02-28");
+  });
+
+  it("reads the calendar day in Europe/Berlin", () => {
+    expect(calendarYmd(new Date("2026-06-12T21:30:00.000Z"))).toBe("2026-06-12");
+    expect(calendarYmd(new Date("2026-06-12T22:30:00.000Z"))).toBe("2026-06-13");
   });
 
   it("reads the calendar year in Europe/Berlin", () => {

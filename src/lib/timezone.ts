@@ -34,6 +34,29 @@ export function addCalendarDays(ymd: string, days: number): string {
   return new Date(utc).toISOString().slice(0, 10);
 }
 
+/** Shift a calendar date by whole months; clamps to the last day of the target month. */
+export function addCalendarMonths(ymd: string, months: number): string {
+  const [year, month, day] = ymd.split("-").map(Number);
+  if (!year || !month || !day) {
+    throw new Error(`invalid calendar date: ${ymd}`);
+  }
+  const targetMonthIndex = month - 1 + months;
+  const lastDay = new Date(Date.UTC(year, targetMonthIndex + 1, 0)).getUTCDate();
+  const clamped = Math.min(day, lastDay);
+  return new Date(Date.UTC(year, targetMonthIndex, clamped))
+    .toISOString()
+    .slice(0, 10);
+}
+
+/** Calendar day (YYYY-MM-DD) as seen in `timeZone`. */
+export function calendarYmd(
+  now: Date,
+  timeZone: string = APP_TIMEZONE,
+): string {
+  const parts = zonedParts(now, timeZone);
+  return `${String(parts.year).padStart(4, "0")}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
+}
+
 export function yearInTimeZone(
   now: Date,
   timeZone: string = APP_TIMEZONE,
@@ -97,4 +120,45 @@ export function zonedInstant(
     utcMillis += delta;
   }
   return new Date(utcMillis);
+}
+
+export function formatBerlinDateTime(date: Date): string {
+  return new Intl.DateTimeFormat(APP_LOCALE, {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: APP_TIMEZONE,
+  }).format(date);
+}
+
+export function formatBerlinTime(date: Date): string {
+  return new Intl.DateTimeFormat(APP_LOCALE, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: APP_TIMEZONE,
+  }).format(date);
+}
+
+/** `datetime-local` wall time in Europe/Berlin, e.g. 2026-08-20T10:00 */
+export function formatDateTimeLocal(
+  date: Date,
+  timeZone: string = APP_TIMEZONE,
+): string {
+  const parts = zonedParts(date, timeZone);
+  const ymd = `${String(parts.year).padStart(4, "0")}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
+  return `${ymd}T${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`;
+}
+
+export function parseDateTimeLocal(
+  value: string,
+  timeZone: string = APP_TIMEZONE,
+): Date {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/.exec(value.trim());
+  if (!match || !match[1] || !match[2] || !match[3]) {
+    throw new Error("invalid datetime");
+  }
+  return zonedInstant(match[1], Number(match[2]), Number(match[3]), timeZone);
 }

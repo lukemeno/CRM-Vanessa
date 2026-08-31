@@ -3,6 +3,7 @@ import { EVENT_STATUSES } from "@/db/schema";
 import {
   EVENT_SOURCE_LABELS,
   EVENT_STATUS_LABELS,
+  boardLostReason,
   type Inquiry,
 } from "@/domain/inquiry";
 import { formatCalendarDate } from "@/lib/timezone";
@@ -49,6 +50,7 @@ export function InquiryBoard({
 }
 
 function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
+  const lostReason = boardLostReason(inquiry);
   return (
     <Link
       href={`/anfragen/${inquiry.id}`}
@@ -68,6 +70,15 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
       <p className="mt-1 text-xs text-olive/70">
         {EVENT_SOURCE_LABELS[inquiry.source]}
       </p>
+      {inquiry.email ? (
+        <p className="mt-1 truncate text-xs text-olive/80">{inquiry.email}</p>
+      ) : null}
+      {inquiry.phone ? (
+        <p className="mt-1 truncate text-xs text-olive/80">{inquiry.phone}</p>
+      ) : null}
+      {lostReason ? (
+        <p className="mt-1 truncate text-xs text-olive/80">{lostReason}</p>
+      ) : null}
     </Link>
   );
 }
