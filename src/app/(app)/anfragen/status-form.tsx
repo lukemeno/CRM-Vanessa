@@ -59,6 +59,14 @@ export function StatusForm({
             rows={3}
             placeholder="Warum ist die Anfrage verloren?"
             className={fieldClass}
+            onInvalid={(event) => {
+              event.currentTarget.setCustomValidity(
+                "Bitte einen Grund angeben, wenn die Anfrage verloren ist.",
+              );
+            }}
+            onInput={(event) => {
+              event.currentTarget.setCustomValidity("");
+            }}
           />
         </label>
       ) : null}
