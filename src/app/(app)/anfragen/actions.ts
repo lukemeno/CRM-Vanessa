@@ -104,6 +104,7 @@ function parseOptionalGuests(raw: string | undefined): number | null {
 function revalidateEventakte(id: string) {
   revalidatePath("/anfragen");
   revalidatePath(`/anfragen/${id}`);
+  revalidatePath("/kalender");
 }
 
 function germanDomainError(error: unknown): string {
