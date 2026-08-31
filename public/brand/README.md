@@ -1,6 +1,6 @@
 # Brand assets
 
-Olive `#5c6540`, cream/paper, Events + script, leaf.
+Olive `#5c6540`, cream/paper, Events + script, botanical olive leaf (`olive-leaf.svg`).
 
 Fonts (SIL Open Font License):
 

@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 import { SAMPLE_OFFER_21062026, offerPdfModel } from "@/domain/offer";
 import { renderOfferPdf } from "@/pdf/render-offer-pdf";
 
+function pdfText(pdf: Buffer): string {
+  return pdf.toString("latin1");
+}
+
 describe("renderOfferPdf", () => {
-  it("returns a PDF for sample offer 21062026", async () => {
+  it("returns a German Beleg with sender, terms, date, and no English Event line", async () => {
     const model = offerPdfModel({
       number: SAMPLE_OFFER_21062026.number,
       issuedOn: SAMPLE_OFFER_21062026.issuedOn,
@@ -21,5 +25,11 @@ describe("renderOfferPdf", () => {
     const pdf = await renderOfferPdf(model);
     expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
     expect(pdf.length).toBeGreaterThan(1000);
+
+    const text = pdfText(pdf);
+    expect(text).toContain("Alte Landstra");
+    expect(text).toContain("01573 8273034");
+    expect(text).toContain("vanessa@events-altehettnerfabrik.de");
+    expect(text).not.toContain("Event 24.07.2027");
   });
 });

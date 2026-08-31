@@ -1,0 +1,1 @@
+ALTER TABLE "offer" ADD CONSTRAINT "offer_number_unique" UNIQUE("number");

@@ -2,6 +2,9 @@ import { APP_LOCALE } from "@/lib/timezone";
 
 export const VAT_PERCENT = 19;
 
+/** Default Anzahlung: 1.000 € gross (19% MwSt). */
+export const ANZAHLUNG_GROSS_CENTS = 100_000;
+
 export function vatCents(netCents: number): number {
   if (!Number.isInteger(netCents)) {
     throw new Error("money must be integer cents");
@@ -11,6 +14,20 @@ export function vatCents(netCents: number): number {
 
 export function grossCents(netCents: number): number {
   return netCents + vatCents(netCents);
+}
+
+/** Invert gross → net so 100000 cents splits 84034 net + 15966 MwSt. */
+export function netFromGross(gross: number): number {
+  if (!Number.isInteger(gross)) {
+    throw new Error("money must be integer cents");
+  }
+  const net = Math.round((gross * 100) / (100 + VAT_PERCENT));
+  for (const candidate of [net, net + 1, net - 1, net + 2, net - 2]) {
+    if (grossCents(candidate) === gross) {
+      return candidate;
+    }
+  }
+  throw new Error("money must be integer cents");
 }
 
 /** Integer cents as German EUR (e.g. 123456 → "1.234,56 €"). */

@@ -2,7 +2,16 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { invoice as invoiceTable } from "@/db/schema";
 import { createEvent } from "@/domain/event";
-import { issueInvoice, stornoInvoice } from "@/domain/invoice";
+import {
+  issueAnzahlung,
+  issueBalanceInvoice,
+  issueInvoice,
+  listInvoicesForEvent,
+  remainingGrossCents,
+  stornoInvoice,
+} from "@/domain/invoice";
+import { ANZAHLUNG_GROSS_CENTS, netFromGross, vatCents } from "@/domain/money";
+import { SAMPLE_OFFER_21062026, saveOffer } from "@/domain/offer";
 import { closeTestDb, getTestDb, resetDomainTables, type TestDb } from "@/domain/pg-test";
 
 describe("invoices", () => {
@@ -73,6 +82,72 @@ describe("invoices", () => {
       .where(eq(invoiceTable.id, original.id));
     expect(unchanged?.netCents).toBe(10_000);
     expect(unchanged?.grossCents).toBe(11_900);
+  });
+
+  it("issues Anzahlung as 1000 EUR gross (84034 net / 15966 MwSt)", async () => {
+    const record = await createEvent(db, {
+      coupleAName: SAMPLE_OFFER_21062026.coupleAName,
+      coupleBName: SAMPLE_OFFER_21062026.coupleBName,
+      eventDate: SAMPLE_OFFER_21062026.eventDate,
+      email: "jana@example.com",
+    });
+    const issued = await issueAnzahlung(db, record.id, {
+      now: new Date("2026-06-21T08:00:00.000Z"),
+    });
+
+    expect(issued.number).toBe("RE-2026-001");
+    expect(issued.netCents).toBe(84_034);
+    expect(issued.vatCents).toBe(15_966);
+    expect(issued.grossCents).toBe(ANZAHLUNG_GROSS_CENTS);
+    expect(issued.kind).toBe("invoice");
+  });
+
+  it("issues the remaining balance after Anzahlung against the offer gross", async () => {
+    const record = await createEvent(db, {
+      coupleAName: SAMPLE_OFFER_21062026.coupleAName,
+      coupleBName: SAMPLE_OFFER_21062026.coupleBName,
+      eventDate: SAMPLE_OFFER_21062026.eventDate,
+      email: "jana@example.com",
+    });
+    await saveOffer(db, record.id, {
+      issuedOn: SAMPLE_OFFER_21062026.issuedOn,
+      lines: [...SAMPLE_OFFER_21062026.lines],
+    });
+    await issueAnzahlung(db, record.id, {
+      now: new Date("2026-06-21T08:00:00.000Z"),
+    });
+    const rest = await issueBalanceInvoice(db, record.id, {
+      now: new Date("2026-06-21T09:00:00.000Z"),
+    });
+
+    const remaining = 755_650 - ANZAHLUNG_GROSS_CENTS;
+    expect(remainingGrossCents(755_650, [{ grossCents: ANZAHLUNG_GROSS_CENTS }])).toBe(
+      remaining,
+    );
+    expect(rest.number).toBe("RE-2026-002");
+    expect(rest.netCents).toBe(netFromGross(remaining));
+    expect(rest.vatCents).toBe(vatCents(netFromGross(remaining)));
+    expect(rest.grossCents).toBe(remaining);
+    expect(rest.kind).toBe("invoice");
+  });
+
+  it("does not issue a second Anzahlung while one is open", async () => {
+    const record = await createEvent(db, {
+      coupleAName: "Anna",
+      coupleBName: "Ben",
+      eventDate: "2026-08-29",
+      email: "anna@example.com",
+    });
+    await issueAnzahlung(db, record.id, {
+      now: new Date("2026-08-10T08:00:00.000Z"),
+    });
+    await expect(
+      issueAnzahlung(db, record.id, {
+        now: new Date("2026-08-10T09:00:00.000Z"),
+      }),
+    ).rejects.toThrow(/anzahlung already issued/);
+    const rows = await listInvoicesForEvent(db, record.id);
+    expect(rows).toHaveLength(1);
   });
 
   it("rejects updates to invoice amounts", async () => {

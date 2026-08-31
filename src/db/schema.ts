@@ -227,7 +227,7 @@ export const offer = pgTable(
       .notNull()
       .unique()
       .references(() => event.id, { onDelete: "cascade" }),
-    number: text("number").notNull(),
+    number: text("number").notNull().unique(),
     issuedOn: date("issued_on", { mode: "string" }).notNull(),
     netCents: integer("net_cents").notNull(),
     vatCents: integer("vat_cents").notNull(),
