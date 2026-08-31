@@ -19,6 +19,8 @@ export function OfferLeaf({
   height?: number;
 }) {
   return (
+    // Decorative Beleg chrome; react-pdf Image has no alt prop.
+    // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image
     <Image src={{ data: oliveLeafPng(), format: "png" }} style={{ width, height }} />
   );
 }
