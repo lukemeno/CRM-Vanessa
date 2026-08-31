@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import {
   calendarBlock,
   event as eventTable,
+  type EventSource,
   type EventStatus,
 } from "@/db/schema";
 import type { AppDb, AppSession } from "@/db/types";
@@ -15,6 +16,8 @@ export type CreateEventInput = {
   guestCount?: number | null;
   quotedNetCents?: number | null;
   eventDate?: string | null;
+  source?: EventSource;
+  note?: string | null;
 };
 
 export async function createEvent(db: AppSession, input: CreateEventInput) {
@@ -29,6 +32,8 @@ export async function createEvent(db: AppSession, input: CreateEventInput) {
       guestCount: input.guestCount ?? null,
       quotedNetCents: input.quotedNetCents ?? null,
       eventDate: input.eventDate ?? null,
+      source: input.source ?? "manual",
+      note: input.note ?? null,
     })
     .returning();
   if (!row) {
