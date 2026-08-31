@@ -21,7 +21,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authenticatorsTable: authenticators,
   }),
   session: { strategy: "jwt" },
-  trustHost: process.env.NODE_ENV !== "production" || Boolean(process.env.AUTH_URL),
+  // Forged Host headers must not become magic-link origins. AUTH_URL is the
+  // canonical origin in production; do not treat it as a reason to trust Host.
+  trustHost: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/",
     error: "/",
