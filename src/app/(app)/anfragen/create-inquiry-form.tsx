@@ -23,36 +23,34 @@ export function CreateInquiryForm() {
   return (
     <form action={action} className="mt-8 max-w-xl space-y-4">
       <label className="block">
-        <span className="mb-1.5 block text-sm text-olive-dark/80">Name A</span>
+        <span className="sr-only">Name</span>
         <input
           name="coupleAName"
           required
           autoComplete="off"
+          placeholder="Jana Hermes"
           className={fieldClass}
         />
       </label>
 
       <label className="block">
-        <span className="mb-1.5 block text-sm text-olive-dark/80">Name B</span>
+        <span className="sr-only">Weiterer Name</span>
         <input
           name="coupleBName"
           required
           autoComplete="off"
+          placeholder="Raphael Gerhards"
           className={fieldClass}
         />
       </label>
 
       <label className="block">
-        <span className="mb-1.5 block text-sm text-olive-dark/80">
-          Datum (optional)
-        </span>
+        <span className="mb-1.5 block text-sm text-olive-dark/80">Datum</span>
         <input name="eventDate" type="date" className={fieldClass} />
       </label>
 
       <label className="block">
-        <span className="mb-1.5 block text-sm text-olive-dark/80">
-          Gäste (optional)
-        </span>
+        <span className="mb-1.5 block text-sm text-olive-dark/80">Gäste</span>
         <input
           name="guestCount"
           type="number"
@@ -83,9 +81,7 @@ export function CreateInquiryForm() {
         />
       </label>
 
-      <p className="text-sm text-olive/70">
-        Mindestens E-Mail oder Telefon, damit Vanessa das Paar erreichen kann.
-      </p>
+      <p className="text-sm text-olive/70">Mindestens E-Mail oder Telefon.</p>
 
       <label className="block">
         <span className="mb-1.5 block text-sm text-olive-dark/80">Quelle</span>
@@ -100,7 +96,7 @@ export function CreateInquiryForm() {
 
       <label className="block">
         <span className="mb-1.5 block text-sm text-olive-dark/80">
-          Notiz (optional)
+          Notiz
         </span>
         <textarea name="note" rows={4} className={fieldClass} />
       </label>

@@ -47,10 +47,6 @@ export function ReservedUntilForm({
       ) : (
         <p className="text-sm text-olive/70">Kein Vorbehalt.</p>
       )}
-      <p className="text-sm text-olive/70">
-        Feld am Angebot, kein eigener Status. Leer speichern hebt den Vorbehalt
-        auf.
-      </p>
       {state.error ? (
         <p className="text-sm text-red-800" role="alert">
           {state.error}

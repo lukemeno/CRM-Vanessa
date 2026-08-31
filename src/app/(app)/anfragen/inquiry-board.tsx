@@ -56,7 +56,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
       href={`/anfragen/${inquiry.id}`}
       className="block rounded-xl border border-olive/10 bg-cream px-3 py-3 text-sm text-olive-dark transition hover:border-olive/30 hover:bg-cream/80"
     >
-      <p className="font-medium leading-snug">
+      <p className="font-serif text-lg leading-snug text-olive">
         {inquiry.coupleAName} & {inquiry.coupleBName}
       </p>
       {inquiry.eventDate ? (

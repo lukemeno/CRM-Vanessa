@@ -24,8 +24,8 @@ export type InquiryFormState = {
 };
 
 const createInquirySchema = z.object({
-  coupleAName: z.string().trim().min(1, "Bitte Name A angeben."),
-  coupleBName: z.string().trim().min(1, "Bitte Name B angeben."),
+  coupleAName: z.string().trim().min(1, "Bitte beide Namen angeben."),
+  coupleBName: z.string().trim().min(1, "Bitte beide Namen angeben."),
   eventDate: z.string().optional(),
   guestCount: z.string().optional(),
   source: z.enum(EVENT_SOURCES),

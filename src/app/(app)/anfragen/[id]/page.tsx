@@ -79,8 +79,6 @@ export default async function EventaktePage({
       <div className="mt-8 grid grid-cols-2 gap-5 max-lg:grid-cols-1">
         <PaperCard title="Paar">
           <dl className="space-y-3">
-            <SummaryRow label="Name A" value={inquiry.coupleAName} />
-            <SummaryRow label="Name B" value={inquiry.coupleBName} />
             <SummaryRow
               label="Datum"
               value={
@@ -114,11 +112,6 @@ export default async function EventaktePage({
               guestCount={inquiry.guestCount}
               locked={guestLocked}
             />
-            {!inquiry.eventDate ? (
-              <p className="mt-2 text-sm text-olive/70">
-                Ohne Eventdatum bleibt die Gästezahl änderbar.
-              </p>
-            ) : null}
           </div>
         </PaperCard>
 
