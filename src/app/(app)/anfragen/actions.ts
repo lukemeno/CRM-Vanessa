@@ -4,26 +4,62 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db/client";
-import { EVENT_SOURCES, EVENT_STATUSES } from "@/db/schema";
-import { changeInquiryStatus, createInquiry } from "@/domain/inquiry";
+import { APPOINTMENT_KINDS, EVENT_SOURCES, EVENT_STATUSES } from "@/db/schema";
+import {
+  schedulePlanning,
+  scheduleViewing,
+} from "@/domain/calendar";
+import { CalendarConflictError } from "@/domain/errors";
+import { GUEST_COUNT_LOCKED_COPY, updateGuestCount } from "@/domain/eventakte";
+import {
+  changeInquiryStatus,
+  createInquiry,
+  setReservedUntil,
+  updateEventNote,
+} from "@/domain/inquiry";
+import { parseDateTimeLocal } from "@/lib/timezone";
 
 export type InquiryFormState = {
   error?: string;
 };
 
 const createInquirySchema = z.object({
-  coupleAName: z.string().trim().min(1, "Bitte Name A angeben."),
-  coupleBName: z.string().trim().min(1, "Bitte Name B angeben."),
+  coupleAName: z.string().trim().min(1, "Bitte beide Namen angeben."),
+  coupleBName: z.string().trim().min(1, "Bitte beide Namen angeben."),
   eventDate: z.string().optional(),
   guestCount: z.string().optional(),
   source: z.enum(EVENT_SOURCES),
   note: z.string().optional(),
+  email: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 const changeStatusSchema = z.object({
   id: z.string().uuid("Ungültige Anfrage."),
   status: z.enum(EVENT_STATUSES),
   lostReason: z.string().optional(),
+});
+
+const eventIdSchema = z.object({
+  id: z.string().uuid("Ungültige Anfrage."),
+});
+
+const guestCountSchema = eventIdSchema.extend({
+  guestCount: z.string().optional(),
+});
+
+const noteSchema = eventIdSchema.extend({
+  note: z.string().optional(),
+});
+
+const reservedUntilSchema = eventIdSchema.extend({
+  reservedUntil: z.string().optional(),
+});
+
+const appointmentSchema = eventIdSchema.extend({
+  kind: z.enum(APPOINTMENT_KINDS),
+  start: z.string().trim().min(1, "Bitte einen Beginn angeben."),
+  end: z.string().optional(),
 });
 
 function parseOptionalDate(raw: string | undefined): string | null {
@@ -49,16 +85,36 @@ function parseOptionalGuests(raw: string | undefined): number | null {
   return parsed;
 }
 
+function revalidateEventakte(id: string) {
+  revalidatePath("/anfragen");
+  revalidatePath(`/anfragen/${id}`);
+}
+
 function germanDomainError(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
+  if (error instanceof CalendarConflictError || message.includes("calendar_block")) {
+    return "Dieser Termin überschneidet sich mit einem bestehenden Kalenderblock.";
+  }
+  if (message.includes("guest_count locked")) {
+    return GUEST_COUNT_LOCKED_COPY;
+  }
   if (message.includes("lost_reason")) {
     return "Bitte einen Grund angeben, wenn die Anfrage verloren ist.";
   }
   if (message.includes("couple names")) {
     return "Bitte beide Namen angeben.";
   }
+  if (message.includes("email or phone")) {
+    return "Bitte E-Mail oder Telefon angeben.";
+  }
   if (message.includes("guest_count")) {
     return "Die Gästezahl muss eine ganze Zahl ab 0 sein.";
+  }
+  if (message.includes("planning period")) {
+    return "Das Planungsende muss nach dem Beginn liegen.";
+  }
+  if (message.includes("invalid datetime")) {
+    return "Datum oder Uhrzeit ist ungültig.";
   }
   return "Die Anfrage konnte nicht gespeichert werden.";
 }
@@ -74,6 +130,8 @@ export async function createInquiryAction(
     guestCount: String(formData.get("guestCount") ?? ""),
     source: formData.get("source") || "manual",
     note: String(formData.get("note") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
   });
   if (!parsed.success) {
     return {
@@ -98,6 +156,8 @@ export async function createInquiryAction(
       guestCount,
       source: parsed.data.source,
       note: parsed.data.note,
+      email: parsed.data.email,
+      phone: parsed.data.phone,
     });
   } catch (error) {
     return { error: germanDomainError(error) };
@@ -133,7 +193,143 @@ export async function changeInquiryStatusAction(
     return { error: germanDomainError(error) };
   }
 
-  revalidatePath("/anfragen");
-  revalidatePath(`/anfragen/${parsed.data.id}`);
-  redirect("/anfragen");
+  revalidateEventakte(parsed.data.id);
+  redirect(`/anfragen/${parsed.data.id}`);
+}
+
+export async function updateGuestCountAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = guestCountSchema.safeParse({
+    id: formData.get("id"),
+    guestCount: String(formData.get("guestCount") ?? ""),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  let guestCount: number | null;
+  try {
+    guestCount = parseOptionalGuests(parsed.data.guestCount);
+  } catch {
+    return { error: "Die Gästezahl muss eine ganze Zahl ab 0 sein." };
+  }
+
+  try {
+    await updateGuestCount(db, parsed.data.id, guestCount, { now: new Date() });
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+export async function updateNoteAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = noteSchema.safeParse({
+    id: formData.get("id"),
+    note: String(formData.get("note") ?? ""),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  try {
+    await updateEventNote(db, parsed.data.id, parsed.data.note ?? null);
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+export async function setReservedUntilAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = reservedUntilSchema.safeParse({
+    id: formData.get("id"),
+    reservedUntil: String(formData.get("reservedUntil") ?? ""),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  const raw = parsed.data.reservedUntil?.trim() ?? "";
+  let reservedUntil: Date | null = null;
+  if (raw) {
+    try {
+      reservedUntil = parseDateTimeLocal(raw);
+    } catch {
+      return { error: "Datum oder Uhrzeit ist ungültig." };
+    }
+  }
+
+  try {
+    await setReservedUntil(db, parsed.data.id, reservedUntil, {
+      now: new Date(),
+    });
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+export async function createAppointmentAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = appointmentSchema.safeParse({
+    id: formData.get("id"),
+    kind: formData.get("kind"),
+    start: String(formData.get("start") ?? ""),
+    end: String(formData.get("end") ?? ""),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  let start: Date;
+  try {
+    start = parseDateTimeLocal(parsed.data.start);
+  } catch {
+    return { error: "Datum oder Uhrzeit ist ungültig." };
+  }
+
+  try {
+    if (parsed.data.kind === "viewing") {
+      await scheduleViewing(db, { eventId: parsed.data.id, start });
+    } else {
+      const endRaw = parsed.data.end?.trim() ?? "";
+      if (!endRaw) {
+        return { error: "Bitte ein Ende für die Planung angeben." };
+      }
+      const end = parseDateTimeLocal(endRaw);
+      await schedulePlanning(db, {
+        eventId: parsed.data.id,
+        start,
+        end,
+      });
+    }
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
 }

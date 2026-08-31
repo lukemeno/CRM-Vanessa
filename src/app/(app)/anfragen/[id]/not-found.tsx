@@ -1,11 +1,13 @@
 import Link from "next/link";
 
-export default function AnfrageNotFound() {
+export default function EventakteNotFound() {
   return (
     <>
-      <h1 className="font-serif text-3xl text-olive">Anfrage nicht gefunden</h1>
+      <h1 className="font-serif text-3xl text-olive">
+        Eventakte nicht gefunden
+      </h1>
       <p className="mt-2 text-sm text-foreground/80">
-        Diese Anfrage gibt es nicht oder sie wurde entfernt.
+        Diese Eventakte gibt es nicht oder sie wurde entfernt.
       </p>
       <p className="mt-6">
         <Link

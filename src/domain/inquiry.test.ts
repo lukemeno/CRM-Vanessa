@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { EVENT_STATUSES, event as eventTable } from "@/db/schema";
 import {
+  boardLostReason,
   changeInquiryStatus,
   createInquiry,
   EVENT_SOURCE_LABELS,
@@ -27,13 +28,31 @@ describe("groupInquiriesByStatus", () => {
       offer: "Angebot",
       booked: "Gebucht",
       planning: "Planung",
-      done: "Fertig",
+      done: "Erledigt",
       lost: "Verloren",
     });
     expect(EVENT_SOURCE_LABELS.manual).toBe("Manuell");
     expect(EVENT_SOURCE_LABELS.website).toBe("Website");
     expect(EVENT_SOURCE_LABELS.bridebook).toBe("Bridebook");
     expect(EVENT_SOURCE_LABELS.other).toBe("Sonstiges");
+  });
+
+  it("shows the lost reason only for Verloren cards", () => {
+    expect(
+      boardLostReason({ status: "new", lostReason: null }),
+    ).toBeNull();
+    expect(
+      boardLostReason({
+        status: "viewing",
+        lostReason: "should not appear",
+      }),
+    ).toBeNull();
+    expect(
+      boardLostReason({
+        status: "lost",
+        lostReason: "Paar hat abgesagt",
+      }),
+    ).toBe("Paar hat abgesagt");
   });
 });
 
@@ -56,6 +75,7 @@ describe("create inquiry", () => {
     const row = await createInquiry(db, {
       coupleAName: "Anna",
       coupleBName: "Ben",
+      email: "anna@example.com",
     });
 
     expect(row.status).toBe("new");
@@ -66,6 +86,8 @@ describe("create inquiry", () => {
     expect(row.guestCount).toBeNull();
     expect(row.note).toBeNull();
     expect(row.lostReason).toBeNull();
+    expect(row.email).toBe("anna@example.com");
+    expect(row.phone).toBeNull();
   });
 
   it("stores optional date, guests, source, and note", async () => {
@@ -76,6 +98,8 @@ describe("create inquiry", () => {
       guestCount: 80,
       source: "website",
       note: "Über das Kontaktformular",
+      email: "clara@example.com",
+      phone: "02253 123456",
     });
 
     expect(row.eventDate).toBe("2026-09-12");
@@ -83,6 +107,18 @@ describe("create inquiry", () => {
     expect(row.source).toBe("website");
     expect(row.note).toBe("Über das Kontaktformular");
     expect(row.status).toBe("new");
+    expect(row.email).toBe("clara@example.com");
+    expect(row.phone).toBe("02253 123456");
+  });
+
+  it("accepts phone without email", async () => {
+    const row = await createInquiry(db, {
+      coupleAName: "Eva",
+      coupleBName: "Finn",
+      phone: "0171 0000000",
+    });
+    expect(row.email).toBeNull();
+    expect(row.phone).toBe("0171 0000000");
   });
 
   it("rejects blank couple names", async () => {
@@ -90,8 +126,27 @@ describe("create inquiry", () => {
       createInquiry(db, {
         coupleAName: "  ",
         coupleBName: "Ben",
+        email: "anna@example.com",
       }),
     ).rejects.toThrow(/couple names required/);
+  });
+
+  it("requires at least email or phone", async () => {
+    await expect(
+      createInquiry(db, {
+        coupleAName: "Anna",
+        coupleBName: "Ben",
+      }),
+    ).rejects.toThrow(/email or phone required/);
+
+    await expect(
+      createInquiry(db, {
+        coupleAName: "Anna",
+        coupleBName: "Ben",
+        email: "  ",
+        phone: "",
+      }),
+    ).rejects.toThrow(/email or phone required/);
   });
 });
 
@@ -114,6 +169,7 @@ describe("inquiry status change", () => {
     const row = await createInquiry(db, {
       coupleAName: "Anna",
       coupleBName: "Ben",
+      email: "anna@example.com",
     });
 
     await expect(
@@ -136,6 +192,7 @@ describe("inquiry status change", () => {
     const row = await createInquiry(db, {
       coupleAName: "Anna",
       coupleBName: "Ben",
+      email: "anna@example.com",
     });
 
     await changeInquiryStatus(db, row.id, "lost", "Paar hat abgesagt");
@@ -152,6 +209,7 @@ describe("inquiry status change", () => {
     const row = await createInquiry(db, {
       coupleAName: "Anna",
       coupleBName: "Ben",
+      email: "anna@example.com",
     });
     await changeInquiryStatus(db, row.id, "lost", "Unsicher");
 
@@ -169,10 +227,12 @@ describe("inquiry status change", () => {
     await createInquiry(db, {
       coupleAName: "Eva",
       coupleBName: "Finn",
+      email: "eva@example.com",
     });
     const viewing = await createInquiry(db, {
       coupleAName: "Gia",
       coupleBName: "Hugo",
+      phone: "0171 1111111",
     });
     await changeInquiryStatus(db, viewing.id, "viewing");
 

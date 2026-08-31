@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { VAT_PERCENT, formatOfferNumber, grossCents, vatCents } from "@/domain/money";
+import {
+  VAT_PERCENT,
+  formatEuroFromCents,
+  formatOfferNumber,
+  grossCents,
+  vatCents,
+} from "@/domain/money";
 
 describe("money", () => {
   it("uses 19% MwSt", () => {
@@ -18,6 +24,16 @@ describe("money", () => {
 
   it("rejects non-integer cents", () => {
     expect(() => vatCents(10.5)).toThrow(/integer cents/);
+  });
+
+  it("formats integer cents as German EUR", () => {
+    expect(formatEuroFromCents(0).replace(/\u00a0/g, " ")).toBe("0,00 €");
+    expect(formatEuroFromCents(10_000).replace(/\u00a0/g, " ")).toBe(
+      "100,00 €",
+    );
+    expect(formatEuroFromCents(123_456).replace(/\u00a0/g, " ")).toBe(
+      "1.234,56 €",
+    );
   });
 });
 
