@@ -17,12 +17,8 @@ import {
   isGuestCountLocked,
   stornoWindowCopy,
 } from "@/domain/eventakte";
-import {
-  EVENT_SOURCE_LABELS,
-  EVENT_STATUS_LABELS,
-  getInquiry,
-} from "@/domain/inquiry";
-import { SAMPLE_CATALOG_LINES, getOfferForEvent } from "@/domain/offer";
+import { EVENT_SOURCE_LABELS, getInquiry } from "@/domain/inquiry";
+import { getOfferForEvent } from "@/domain/offer";
 import {
   calendarYmd,
   formatBerlinDateTime,
@@ -77,9 +73,6 @@ export default async function EventaktePage({
       <h1 className="mt-6 font-serif text-3xl text-olive">
         {inquiry.coupleAName} & {inquiry.coupleBName}
       </h1>
-      <p className="mt-2 text-sm text-foreground/80">
-        Status: {EVENT_STATUS_LABELS[inquiry.status]}
-      </p>
 
       <div className="mt-8 rounded-2xl bg-paper px-10 py-8 shadow-[0_10px_30px_rgba(90,80,50,0.06)] max-lg:px-4 max-lg:py-5">
         <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-lg:grid-cols-1">
@@ -149,29 +142,23 @@ export default async function EventaktePage({
                     quantity: line.quantity,
                     unitNetCents: line.unitNetCents,
                   }))
-                : SAMPLE_CATALOG_LINES
+                : []
             }
           />
         </div>
 
         <div className="mt-10 grid grid-cols-2 gap-x-16 gap-y-8 border-t border-olive/10 pt-8 max-lg:grid-cols-1">
-          <div>
+          <div className="space-y-3">
             {booked && inquiry.eventDate ? (
               <p className="text-sm text-olive-dark">
                 Standortfenster: {bookedLocationWindowCopy()}
               </p>
-            ) : (
-              <p className="text-sm text-olive/70">Noch nicht gebucht.</p>
-            )}
+            ) : null}
             {inquiry.eventDate ? (
-              <p className="mt-3 text-sm text-olive-dark">
+              <p className="text-sm text-olive-dark">
                 {stornoWindowCopy(inquiry.eventDate)}
               </p>
-            ) : (
-              <p className="mt-3 text-sm text-olive/70">
-                Storno-Frist erscheint nach dem Eventdatum.
-              </p>
-            )}
+            ) : null}
           </div>
 
           <div>
