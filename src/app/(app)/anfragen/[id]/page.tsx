@@ -6,6 +6,7 @@ import { AddAppointmentForm } from "@/app/(app)/anfragen/[id]/add-appointment-fo
 import { GuestCountForm } from "@/app/(app)/anfragen/[id]/guest-count-form";
 import { NoteForm } from "@/app/(app)/anfragen/[id]/note-form";
 import { ReservedUntilForm } from "@/app/(app)/anfragen/[id]/reserved-until-form";
+import { OfferForm } from "@/app/(app)/anfragen/[id]/offer-form";
 import { db } from "@/db/client";
 import {
   APPOINTMENT_KIND_LABELS,
@@ -21,8 +22,9 @@ import {
   EVENT_STATUS_LABELS,
   getInquiry,
 } from "@/domain/inquiry";
-import { formatEuroFromCents } from "@/domain/money";
+import { SAMPLE_CATALOG_LINES, getOfferForEvent } from "@/domain/offer";
 import {
+  calendarYmd,
   formatBerlinDateTime,
   formatBerlinTime,
   formatCalendarDate,
@@ -60,6 +62,7 @@ export default async function EventaktePage({
   const appointments = await listAppointments(db, inquiry.id);
   const guestLocked = isGuestCountLocked(inquiry.eventDate, now);
   const booked = inquiry.status === "booked" || inquiry.status === "planning" || inquiry.status === "done";
+  const offer = await getOfferForEvent(db, inquiry.id);
 
   return (
     <>
@@ -132,22 +135,21 @@ export default async function EventaktePage({
           ) : null}
         </PaperCard>
 
-        <PaperCard title="Geld">
-          {inquiry.quotedNetCents != null ? (
-            <p className="text-2xl font-serif text-olive">
-              {formatEuroFromCents(inquiry.quotedNetCents)}
-              <span className="ml-2 text-sm font-sans text-olive/70">
-                netto
-              </span>
-            </p>
-          ) : (
-            <p className="text-sm text-olive/70">
-              Kein Angebotsbetrag hinterlegt.
-            </p>
-          )}
-          <p className="mt-3 text-sm text-olive/70">
-            Angebote und Rechnungen folgen.
-          </p>
+        <PaperCard title="Angebot" wide>
+          <OfferForm
+            eventId={inquiry.id}
+            issuedOn={offer?.issuedOn ?? calendarYmd(now)}
+            offerNumber={offer?.number ?? null}
+            lines={
+              offer
+                ? offer.lines.map((line) => ({
+                    description: line.description,
+                    quantity: line.quantity,
+                    unitNetCents: line.unitNetCents,
+                  }))
+                : SAMPLE_CATALOG_LINES
+            }
+          />
         </PaperCard>
 
         <PaperCard title="Standort und Storno">
@@ -204,12 +206,16 @@ export default async function EventaktePage({
 function PaperCard({
   title,
   children,
+  wide = false,
 }: {
   title: string;
   children: ReactNode;
+  wide?: boolean;
 }) {
   return (
-    <section className="rounded-2xl bg-paper px-6 py-5 shadow-[0_10px_30px_rgba(90,80,50,0.06)]">
+    <section
+      className={`rounded-2xl bg-paper px-6 py-5 shadow-[0_10px_30px_rgba(90,80,50,0.06)] ${wide ? "col-span-2 max-lg:col-span-1" : ""}`}
+    >
       <h2 className="font-serif text-xl text-olive">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
