@@ -65,6 +65,14 @@
 - [x] Booked Saturday writes Fri 11:00–Sun 11:00; exclusion stays on `calendar_block`
 - [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
 
+## PR-8 — Heute
+
+- [x] `/heute` lists today's appointments, next events, unpaid invoices, and new inquiries from real data
+- [x] Empty states are real, not leftover PR copy
+- [x] Clicks go to Eventakte; section titles go to Kalender or Anfragen
+- [x] Optional Rechnung task two days after the event when money is still open
+- [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
+
 ## Later PRs
 
-- Heute content, IMAP
+- IMAP

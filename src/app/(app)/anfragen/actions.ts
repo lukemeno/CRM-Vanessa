@@ -105,6 +105,7 @@ function revalidateEventakte(id: string) {
   revalidatePath("/anfragen");
   revalidatePath(`/anfragen/${id}`);
   revalidatePath("/kalender");
+  revalidatePath("/heute");
 }
 
 function germanDomainError(error: unknown): string {
@@ -208,6 +209,7 @@ export async function createInquiryAction(
   }
 
   revalidatePath("/anfragen");
+  revalidatePath("/heute");
   redirect("/anfragen");
 }
 
