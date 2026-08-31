@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createEvent } from "@/domain/event";
 import { SAMPLE_OFFER_21062026, getOfferForEvent, saveOffer } from "@/domain/offer";
 import { formatOfferNumber } from "@/domain/money";
+import { offer as offerTable } from "@/db/schema";
 import { closeTestDb, getTestDb, resetDomainTables, type TestDb } from "@/domain/pg-test";
 
 describe("saveOffer", () => {
@@ -86,5 +87,54 @@ describe("saveOffer", () => {
       "Location Alte Hettnerfabrik, Fr 11:00 bis So 11:00",
       "Service und Ausstattung",
     ]);
+  });
+
+  it("gives a second offer issued the same day a unique -2 suffix", async () => {
+    const jana = await createEvent(db, {
+      coupleAName: SAMPLE_OFFER_21062026.coupleAName,
+      coupleBName: SAMPLE_OFFER_21062026.coupleBName,
+      eventDate: SAMPLE_OFFER_21062026.eventDate,
+      email: "jana@example.com",
+    });
+    const mira = await createEvent(db, {
+      coupleAName: "Mira",
+      coupleBName: "Jonas",
+      eventDate: "2027-08-14",
+      email: "mira@example.com",
+    });
+
+    const first = await saveOffer(db, jana.id, {
+      issuedOn: SAMPLE_OFFER_21062026.issuedOn,
+      lines: [...SAMPLE_OFFER_21062026.lines],
+    });
+    const second = await saveOffer(db, mira.id, {
+      issuedOn: SAMPLE_OFFER_21062026.issuedOn,
+      lines: [...SAMPLE_OFFER_21062026.lines],
+    });
+
+    expect(first.number).toBe("21062026");
+    expect(second.number).toBe("21062026-2");
+    expect(second.number.startsWith("RE-")).toBe(false);
+
+    let thrown: unknown;
+    try {
+      await db.insert(offerTable).values({
+        eventId: (
+          await createEvent(db, {
+            coupleAName: "Lea",
+            coupleBName: "Paul",
+            email: "lea@example.com",
+          })
+        ).id,
+        number: "21062026",
+        issuedOn: "2026-06-21",
+        netCents: 1000,
+        vatCents: 190,
+        grossCents: 1190,
+      });
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeDefined();
   });
 });

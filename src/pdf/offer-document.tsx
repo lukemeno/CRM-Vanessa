@@ -5,8 +5,9 @@ import {
   Text,
   View,
 } from "@react-pdf/renderer";
+import type { BelegPdfModel } from "@/domain/beleg";
+import { belegSenderLines } from "@/domain/beleg";
 import { formatEuroFromCents } from "@/domain/money";
-import type { OfferPdfModel } from "@/domain/offer";
 import { OfferLeaf } from "@/pdf/offer-leaf";
 
 const OLIVE = "#5c6540";
@@ -21,13 +22,19 @@ const styles = StyleSheet.create({
     fontFamily: "Cormorant Garamond",
     fontWeight: 500,
     paddingTop: 40,
-    paddingBottom: 48,
+    paddingBottom: 72,
     paddingHorizontal: 48,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+  },
+  leaf: {
+    width: 86,
+    height: 110,
+    marginTop: -8,
+    marginRight: -6,
   },
   events: {
     fontSize: 22,
@@ -41,6 +48,14 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: OLIVE,
     marginTop: -4,
+  },
+  sender: {
+    marginTop: 10,
+    gap: 1,
+  },
+  senderLine: {
+    fontSize: 9,
+    color: OLIVE,
   },
   rule: {
     marginTop: 16,
@@ -107,14 +122,25 @@ const styles = StyleSheet.create({
   },
   grossLabel: { fontSize: 14, color: OLIVE, fontWeight: 600 },
   grossValue: { fontSize: 14, color: OLIVE_DARK, fontWeight: 600 },
+  terms: {
+    marginTop: 28,
+    gap: 6,
+    maxWidth: 420,
+  },
+  term: {
+    fontSize: 10,
+    color: OLIVE_DARK,
+    lineHeight: 1.35,
+  },
   footer: {
     position: "absolute",
     bottom: 28,
     left: 48,
     right: 48,
-    fontSize: 9,
+    fontSize: 8,
     color: OLIVE,
     textAlign: "center",
+    lineHeight: 1.4,
   },
 });
 
@@ -122,11 +148,21 @@ function euro(cents: number): string {
   return formatEuroFromCents(cents).replace(/\u00a0/g, " ");
 }
 
-export function OfferDocument({ model }: { model: OfferPdfModel }) {
+export function BelegDocument({ model }: { model: BelegPdfModel }) {
+  const senderLines = belegSenderLines(model.sender);
   return (
     <Document
-      title={`Angebot ${model.number}`}
+      title={model.heading}
       author="Events by Vanessa"
+      subject={`${model.coupleNames}${model.eventDateLabel ? ` · ${model.eventDateLabel}` : ""}`}
+      keywords={[
+        model.number,
+        model.eventDateLabel,
+        ...senderLines,
+        ...model.terms,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       language="de"
     >
       <Page size="A4" style={styles.page}>
@@ -134,16 +170,25 @@ export function OfferDocument({ model }: { model: OfferPdfModel }) {
           <View>
             <Text style={styles.events}>Events</Text>
             <Text style={styles.script}>by Vanessa</Text>
+            <View style={styles.sender}>
+              {senderLines.map((line) => (
+                <Text key={line} style={styles.senderLine}>
+                  {line}
+                </Text>
+              ))}
+            </View>
           </View>
-          <OfferLeaf color={OLIVE} />
+          <View style={styles.leaf}>
+            <OfferLeaf />
+          </View>
         </View>
         <View style={styles.rule} />
-        <Text style={styles.title}>Angebot {model.number}</Text>
+        <Text style={styles.title}>{model.heading}</Text>
         <View style={styles.meta}>
           <Text style={styles.metaLine}>Datum {model.issuedOnLabel}</Text>
           <Text style={styles.metaLine}>{model.coupleNames}</Text>
           {model.eventDateLabel ? (
-            <Text style={styles.metaLine}>Event {model.eventDateLabel}</Text>
+            <Text style={styles.metaLine}>{model.eventDateLabel}</Text>
           ) : null}
           <Text style={styles.metaLine}>
             {model.locationName}, {model.locationWindow}
@@ -179,8 +224,26 @@ export function OfferDocument({ model }: { model: OfferPdfModel }) {
             <Text style={styles.grossValue}>{euro(model.grossCents)}</Text>
           </View>
         </View>
-        <Text style={styles.footer}>Events by Vanessa · Alte Hettnerfabrik</Text>
+        {model.terms.length > 0 ? (
+          <View style={styles.terms}>
+            {model.terms.map((term) => (
+              <Text key={term} style={styles.term}>
+                {term}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+        <Text style={styles.footer}>
+          {model.sender.name} · {model.sender.street} · {model.sender.postalCity}
+          {"\n"}
+          Tel {model.sender.phone} · {model.sender.email}
+        </Text>
       </Page>
     </Document>
   );
+}
+
+/** @deprecated Use BelegDocument — kept so existing offer imports stay stable. */
+export function OfferDocument({ model }: { model: BelegPdfModel }) {
+  return <BelegDocument model={model} />;
 }

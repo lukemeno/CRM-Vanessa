@@ -227,7 +227,7 @@ export const offer = pgTable(
       .notNull()
       .unique()
       .references(() => event.id, { onDelete: "cascade" }),
-    number: text("number").notNull(),
+    number: text("number").notNull().unique(),
     issuedOn: date("issued_on", { mode: "string" }).notNull(),
     netCents: integer("net_cents").notNull(),
     vatCents: integer("vat_cents").notNull(),
@@ -284,7 +284,8 @@ export const invoice = pgTable(
       .references(() => event.id, { onDelete: "restrict" }),
     number: text("number").notNull().unique(),
     kind: invoiceKindEnum("kind").notNull().default("invoice"),
-    stornoOfId: uuid("storno_of_id"),
+    stornoOfId: uuid("storno_of_id").unique(),
+    description: text("description").notNull(),
     netCents: integer("net_cents").notNull(),
     vatCents: integer("vat_cents").notNull(),
     grossCents: integer("gross_cents").notNull(),
@@ -302,6 +303,10 @@ export const invoice = pgTable(
     check(
       "invoice_gross_matches_parts",
       sql`${table.grossCents} = ${table.netCents} + ${table.vatCents}`,
+    ),
+    check(
+      "invoice_description_present",
+      sql`btrim(${table.description}) <> ''`,
     ),
   ],
 );

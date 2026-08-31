@@ -6,6 +6,7 @@ import { ContactForm } from "@/app/(app)/anfragen/[id]/contact-form";
 import { GuestCountForm } from "@/app/(app)/anfragen/[id]/guest-count-form";
 import { NoteForm } from "@/app/(app)/anfragen/[id]/note-form";
 import { OfferForm } from "@/app/(app)/anfragen/[id]/offer-form";
+import { InvoicePanel } from "@/app/(app)/anfragen/[id]/invoice-panel";
 import { ReservedUntilForm } from "@/app/(app)/anfragen/[id]/reserved-until-form";
 import { db } from "@/db/client";
 import {
@@ -15,6 +16,12 @@ import {
 } from "@/domain/calendar";
 import { isGuestCountLocked, stornoWindowCopy } from "@/domain/eventakte";
 import { EVENT_SOURCE_LABELS, getInquiry } from "@/domain/inquiry";
+import {
+  canIssueAnzahlung,
+  invoiceLineLabel,
+  listInvoicesForEvent,
+  remainingGrossCents,
+} from "@/domain/invoice";
 import { getOfferForEvent } from "@/domain/offer";
 import {
   calendarYmd,
@@ -59,6 +66,14 @@ export default async function EventaktePage({
     inquiry.status === "planning" ||
     inquiry.status === "done";
   const offer = await getOfferForEvent(db, inquiry.id);
+  const invoices = await listInvoicesForEvent(db, inquiry.id);
+  const stornoedIds = new Set(
+    invoices
+      .filter((row) => row.kind === "storno" && row.stornoOfId)
+      .map((row) => row.stornoOfId as string),
+  );
+  const remaining =
+    offer != null ? remainingGrossCents(offer.grossCents, invoices) : null;
 
   return (
     <>
@@ -141,6 +156,26 @@ export default async function EventaktePage({
                   }))
                 : []
             }
+          />
+        </div>
+
+        <div className="mt-10 border-t border-olive/10 pt-8">
+          <InvoicePanel
+            eventId={inquiry.id}
+            remainingGrossCents={remaining}
+            canIssueAnzahlung={canIssueAnzahlung(invoices, remaining)}
+            canIssueBalance={remaining != null && remaining > 0}
+            invoices={invoices.map((row) => ({
+              id: row.id,
+              number: row.number,
+              kind: row.kind,
+              line: invoiceLineLabel(row, invoices),
+              netCents: row.netCents,
+              vatCents: row.vatCents,
+              grossCents: row.grossCents,
+              createdAt: row.createdAt,
+              canStorno: row.kind === "invoice" && !stornoedIds.has(row.id),
+            }))}
           />
         </div>
 
