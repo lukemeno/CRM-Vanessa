@@ -2,7 +2,7 @@
 
 Betriebs-App für **Events by Vanessa** (Vanessa Düster, Alte Hettnerfabrik, Bad Münstereifel). Nach dem Anmelden landet die Operatorin auf `/heute`.
 
-Diese Version ist das Gerüst plus das Fachmodell in Postgres, das Anfragenboard, die Eventakte und den Monatskalender: Magic-Link-Login (Allowlist), eine Desktop-Shell (Heute, Anfragen, Kalender) und Tabellen für Eventakte, Angebote, Termine, Kalenderblöcke und Rechnungen. Unter `/anfragen` sieht Vanessa jede Anfrage nach Status und kann eine anlegen. Die Eventakte liegt unter `/anfragen/[id]` — Board und Akte sind ein Ort. Auf der Akte kann sie ein Angebot mit Positionen bauen, Anzahlung und Rechnung ausstellen. Der Kalender unter `/kalender` zeigt Besichtigung, Planung, Gebucht, Blockiert und Aufgabe für die Alte Hettnerfabrik. IMAP und der Inhalt von Heute kommen später.
+Diese Version ist das Gerüst plus das Fachmodell in Postgres, das Anfragenboard, die Eventakte, den Monatskalender und Heute: Magic-Link-Login (Allowlist), eine Desktop-Shell (Heute, Anfragen, Kalender) und Tabellen für Eventakte, Angebote, Termine, Kalenderblöcke und Rechnungen. Unter `/anfragen` sieht Vanessa jede Anfrage nach Status und kann eine anlegen. Die Eventakte liegt unter `/anfragen/[id]` — Board und Akte sind ein Ort. Auf der Akte kann sie ein Angebot mit Positionen bauen, Anzahlung und Rechnung ausstellen. Der Kalender unter `/kalender` zeigt Besichtigung, Planung, Gebucht, Blockiert und Aufgabe für die Alte Hettnerfabrik. `/heute` listet Termine, nächste Veranstaltungen, offene Zahlungen und neue Anfragen. IMAP kommt später.
 
 Die Oberfläche ist **desktop-first** (`md`/`lg`). Vanessa arbeitet am Rechner; Handy und Tablet bleiben lesbar, sind aber der Fallback, nicht die Vorlage.
 
@@ -79,6 +79,5 @@ Drizzle + Postgres. Auth.js-Tabellen (User, Account, Session, Verification Token
 
 Nicht in diesem PR:
 
-- Inhalt der Heute-Kacheln
 - Kundenportal
 - IMAP
