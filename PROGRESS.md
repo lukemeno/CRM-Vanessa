@@ -11,6 +11,15 @@
 - [x] CLAUDE.md, README hosting note, `.env.example`
 - [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
 
+## PR-2 — Domain model (events, money, calendar blocks)
+
+- [x] `event` with couple names, enum status, lost_reason, reserved_until, guest_count, quoted_net_cents, event_date
+- [x] `invoice_counter` + append-only `invoice` (RE-YYYY-NNN, Storno as a new row)
+- [x] `appointment` (viewing 60 min / planning) without exclusion
+- [x] `calendar_block` gist exclusion; booked Fri 11–Sun 11 Berlin; viewing 60+30; planning/reserved period only
+- [x] Collision tests: double-booked weekend, viewing vs booked, overlapping viewing buffers, expired reserve
+- [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
+
 ## Later PRs
 
-- PR-2+ domain tables, Anfragen board, Kalender, Angebote, Rechnungen, IMAP, Heute content
+- Anfragen board, Kalender UI, Angebote PDFs, IMAP, Heute content

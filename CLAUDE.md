@@ -27,14 +27,17 @@ pnpm test
 
 - Prefer **server actions** over extra API routes. The health probe and Auth.js/magic endpoints are the exceptions.
 - **Zod at HTTP/form boundaries.** No `any`.
-- Money (later PRs) is integer **cents**, never floats.
-- Dates: `date` for calendar days, `timestamptz` for instants. Display in `Europe/Berlin`.
-- Domain tables (Eventakte, Anfragen, Angebote, Rechnungen, Kalender) are **not** in PR-1.
+- Money is integer **cents**, never floats. VAT is 19% MwSt (`quoted_net_cents` on event; invoices store net/vat/gross).
+- Dates: `date` for calendar days, `timestamptz` / `tstzrange` for instants. Display in `Europe/Berlin`.
+- `calendar_block` is the only overlap table (`EXCLUDE USING gist (period WITH &&) WHERE (blocks_calendar)`). Do not put `now()` in that predicate.
+- Invoice numbers are `RE-YYYY-NNN` from `invoice_counter` (`SELECT FOR UPDATE`). Amounts are append-only; Storno is a new row. Offer numbers stay date-style (`21062026`).
+- Status values are only `new|viewing|offer|booked|planning|done|lost`. `reserved_until` is a field, not a status. Lost requires `lost_reason`.
 
 ## Forbidden
 
 - Schema change without a Drizzle migration
 - New dependency without a note in `docs/adr/`
-- IMAP in this PR (env placeholders only)
+- IMAP (env placeholders only; no worker)
 - Mobile-first layout as the design source
 - Vercel Hobby for commercial hosting
+- `tenant_id`, public booking routes, PDF rendering, calendar UI pages
