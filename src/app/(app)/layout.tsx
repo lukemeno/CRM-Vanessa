@@ -1,9 +1,9 @@
-import { AppShell } from "@/components/app-shell";
+import { Shell } from "@/components/shell";
 import { auth } from "@/auth";
-import { isEmailAllowed } from "@/lib/allowlist";
+import { isEmailAllowed } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
-export default async function HeuteLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -13,5 +13,5 @@ export default async function HeuteLayout({
     redirect("/");
   }
 
-  return <AppShell email={session.user.email}>{children}</AppShell>;
+  return <Shell email={session.user.email}>{children}</Shell>;
 }

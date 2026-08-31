@@ -2,7 +2,7 @@
 
 import { signIn } from "@/auth";
 import { AUTH_ERRORS, magicLinkSendSucceeded } from "@/lib/auth-errors";
-import { evaluateMagicLinkRequest } from "@/lib/magic-link-request";
+import { evaluateMagicLinkRequest } from "@/lib/auth";
 
 export type LoginState = {
   error?: string;

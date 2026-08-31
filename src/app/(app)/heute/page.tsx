@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { isEmailAllowed } from "@/lib/allowlist";
+import { isEmailAllowed } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 const sections = [

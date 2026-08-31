@@ -9,7 +9,7 @@ import {
   users,
   verificationTokens,
 } from "@/db/schema";
-import { isEmailAllowed } from "@/lib/allowlist";
+import { isEmailAllowed } from "@/lib/auth";
 import { sendVerificationRequest } from "@/lib/send-verification-request";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -29,9 +29,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   providers: [
     Nodemailer({
-      server: process.env.EMAIL_SERVER ?? "smtp://127.0.0.1:1025",
-      from:
-        process.env.EMAIL_FROM ?? "Events by Vanessa <noreply@localhost>",
+      server: {
+        host: process.env.SMTP_HOST ?? "127.0.0.1",
+        port: Number(process.env.SMTP_PORT ?? 587),
+        auth: {
+          user: process.env.SMTP_USER ?? "dev",
+          pass: process.env.SMTP_PASS ?? "dev",
+        },
+      },
+      from: process.env.SMTP_USER
+        ? `Events by Vanessa <${process.env.SMTP_USER}>`
+        : "Events by Vanessa <noreply@localhost>",
       sendVerificationRequest,
     }),
   ],

@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate"
   },
@@ -19,7 +20,8 @@
     "nodemailer": "^7.0.11",
     "postgres": "^3.4.7",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

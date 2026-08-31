@@ -2,7 +2,7 @@
 
 Betriebs-App für **Events by Vanessa** (Vanessa Düster, Alte Hettnerfabrik, Bad Münstereifel). Nach dem Anmelden landet die Operatorin auf `/heute`.
 
-Diese erste Version ist nur das Gerüst: Magic-Link-Login (Allowlist) und eine leere Heute-Ansicht. Anfragen, Angebote, Rechnungen und Kalender kommen in späteren PRs.
+Diese erste Version ist nur das Gerüst: Magic-Link-Login (Allowlist) und eine leere Desktop-Shell (Heute, Anfragen, Kalender). Anfragenboard, Kalenderinhalt, Angebote, Rechnungen und IMAP kommen in späteren PRs.
 
 Die Oberfläche ist **desktop-first** (`md`/`lg`). Vanessa arbeitet am Rechner; Handy und Tablet bleiben lesbar, sind aber der Fallback, nicht die Vorlage.
 
@@ -10,7 +10,11 @@ Die Oberfläche ist **desktop-first** (`md`/`lg`). Vanessa arbeitet am Rechner; 
 
 - Node.js 20 oder neuer
 - [pnpm](https://pnpm.io/) 10
-Postgres in der **EU** — vorgesehen sind [Fly Postgres](https://fly.io/docs/postgres/) oder [Railway](https://railway.app/) in **Frankfurt**. Nicht in den USA hosten. In der Connection-URL `sslmode=require` setzen, sobald der Host TLS verlangt. Dieses Repo deployt nichts.
+- PostgreSQL in der **EU**
+
+Zielkosten unter **25 EUR/Monat**. Postgres nicht in den USA hosten. In der Connection-URL `sslmode=require` setzen, sobald der Host TLS verlangt.
+
+**Hosting:** Vercel Hobby ist für kommerzielle Nutzung nicht lizenziert. Bevorzugt **Hetzner VPS + Coolify** oder **Vercel Pro**. Dieses Repo deployt nichts.
 
 ## Lokal starten
 
@@ -25,6 +29,7 @@ In `.env.local`:
 2. `AUTH_SECRET` erzeugen: `npx auth secret` (oder eine lange Zufallszeichenkette eintragen).
 3. `AUTH_ALLOWLIST` auf die echten Adressen von Vanessa und Luke setzen (kommagetrennt).
 4. `AUTH_URL` auf `http://localhost:3000` lassen.
+5. Für echten Versand: `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` (Ionos). IMAP-Variablen bleiben leer.
 
 Dann Schema anlegen und den Dev-Server starten:
 
@@ -39,7 +44,7 @@ pnpm dev
 
 - Nur E-Mail-Adressen in `AUTH_ALLOWLIST` dürfen sich anmelden.
 - Unbekannte Adressen erhalten eine deutsche Fehlermeldung. Es wird **keine** Mail verschickt.
-- In Produktion den Link per SMTP versenden (`EMAIL_SERVER`, `EMAIL_FROM`).
+- In Produktion sendet Ionos-SMTP den einen Anmeldelink (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`).
 
 ## Local-Dev-Bypass (kein SMTP)
 
@@ -59,23 +64,26 @@ Bei aktivem Bypass schreibt der Server den Magic-Link in die Konsole, statt eine
 | --- | --- |
 | `pnpm dev` | Dev-Server |
 | `pnpm build` | Produktionsbuild |
+| `pnpm typecheck` | TypeScript |
 | `pnpm test` | Unit-Tests |
 | `pnpm lint` | ESLint |
 | `pnpm db:migrate` | Drizzle-Migrationen anwenden |
 
 ## Datenbank
 
-Drizzle + Postgres. PR-1 enthält nur die Auth.js-Tabellen (User, Account, Session, Verification Token), damit Magic-Links funktionieren. Fachliche Tabellen (Geld, Anfragen, Angebote, Rechnungen, Kalender) gehören in spätere PRs.
+Drizzle + Postgres. PR-1 enthält nur die Auth.js-Tabellen (User, Account, Session, Verification Token), damit Magic-Links funktionieren. Fachliche Tabellen gehören in PR-2.
+
+`GET /api/health` meldet, ob Postgres erreichbar ist.
 
 ## Was später kommt
 
 Nicht in diesem PR:
 
-- Eventakte
+- Eventakte / Domain-Tabellen
 - Anfragenboard
 - Angebote und PDFs
 - Rechnungen
-- Kalender
+- Kalenderinhalt
+- IMAP
 - Inhalt der Heute-Kacheln
 - Kundenportal
-- Festlegung auf Vercel

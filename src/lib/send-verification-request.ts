@@ -1,6 +1,6 @@
-import { createTransport } from "nodemailer";
-import { isEmailAllowed } from "@/lib/allowlist";
+import { isEmailAllowed } from "@/lib/auth";
 import { isDevBypassEnabled } from "@/lib/dev-bypass";
+import { sendSmtpMail } from "@/lib/mail/smtp";
 
 type VerificationParams = {
   identifier: string;
@@ -14,7 +14,6 @@ type VerificationParams = {
 export async function sendVerificationRequest({
   identifier,
   url,
-  provider,
 }: VerificationParams) {
   if (!isEmailAllowed(identifier)) {
     console.warn(
@@ -28,25 +27,12 @@ export async function sendVerificationRequest({
     return;
   }
 
-  if (!process.env.EMAIL_SERVER || !provider.server) {
-    throw new Error(
-      "EMAIL_SERVER ist nicht gesetzt. Für lokales Arbeiten AUTH_DEV_BYPASS=1 setzen (nur bei NODE_ENV=development wirksam).",
-    );
-  }
-
-  const transport = createTransport(provider.server);
-  const result = await transport.sendMail({
+  await sendSmtpMail({
     to: identifier,
-    from: provider.from,
     subject: "Dein Anmeldelink für Events by Vanessa",
     text: textBody(url),
     html: htmlBody(url),
   });
-
-  const failed = [...result.rejected, ...result.pending].filter(Boolean);
-  if (failed.length > 0) {
-    throw new Error(`E-Mail konnte nicht gesendet werden (${failed.join(", ")})`);
-  }
 }
 
 function escapeHtmlAttr(value: string) {

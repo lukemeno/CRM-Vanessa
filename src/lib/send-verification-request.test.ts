@@ -1,13 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const { sendMail, createTransport } = vi.hoisted(() => {
-  const sendMail = vi.fn();
-  const createTransport = vi.fn(() => ({ sendMail }));
-  return { sendMail, createTransport };
-});
+const sendSmtpMail = vi.hoisted(() => vi.fn());
 
-vi.mock("nodemailer", () => ({
-  createTransport,
+vi.mock("@/lib/mail/smtp", () => ({
+  sendSmtpMail,
 }));
 
 describe("sendVerificationRequest", () => {
@@ -30,8 +26,7 @@ describe("sendVerificationRequest", () => {
       provider: { server: "smtp://should-not-be-used", from: "x@y.z" },
     });
 
-    expect(createTransport).not.toHaveBeenCalled();
-    expect(sendMail).not.toHaveBeenCalled();
+    expect(sendSmtpMail).not.toHaveBeenCalled();
   });
 
   it("prints the magic link in development bypass mode and does not send mail", async () => {
@@ -50,7 +45,6 @@ describe("sendVerificationRequest", () => {
       provider: { server: "smtp://should-not-be-used", from: "x@y.z" },
     });
 
-    expect(createTransport).not.toHaveBeenCalled();
-    expect(sendMail).not.toHaveBeenCalled();
+    expect(sendSmtpMail).not.toHaveBeenCalled();
   });
 });

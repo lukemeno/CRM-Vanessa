@@ -1,14 +1,17 @@
 import { auth } from "@/auth";
-import { isEmailAllowed } from "@/lib/allowlist";
+import { isEmailAllowed } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
-  const isAuthRoute = pathname.startsWith("/api/auth");
+  const isPublic =
+    pathname === "/" ||
+    pathname.startsWith("/api/auth") ||
+    pathname === "/api/health";
   const email = req.auth?.user?.email;
   const allowed = Boolean(email && isEmailAllowed(email));
 
-  if (req.auth && !allowed && pathname !== "/" && !isAuthRoute) {
+  if (req.auth && !allowed && !isPublic) {
     return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
@@ -16,7 +19,7 @@ export const proxy = auth((req) => {
     return NextResponse.redirect(new URL("/heute", req.nextUrl));
   }
 
-  if (!req.auth && pathname !== "/" && !isAuthRoute) {
+  if (!req.auth && !isPublic) {
     return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
