@@ -29,7 +29,7 @@ In `.env.local`:
 2. `AUTH_SECRET` erzeugen: `npx auth secret` (oder eine lange Zufallszeichenkette eintragen).
 3. `AUTH_ALLOWLIST` auf die echten Adressen von Vanessa und Luke setzen (kommagetrennt).
 4. `AUTH_URL` auf `http://localhost:3000` lassen.
-5. Für echten Versand: `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` (Ionos). IMAP-Variablen bleiben leer.
+5. Optional: `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` für echten Mailversand.
 
 Dann Schema anlegen und den Dev-Server starten:
 
@@ -84,6 +84,5 @@ Nicht in diesem PR:
 - Angebote und PDFs
 - Rechnungen
 - Kalenderinhalt
-- IMAP
 - Inhalt der Heute-Kacheln
 - Kundenportal
