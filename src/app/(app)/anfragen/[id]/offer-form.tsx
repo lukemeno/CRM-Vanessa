@@ -15,6 +15,7 @@ import {
   offerTotals,
   type OfferLineInput,
 } from "@/domain/offer";
+import { formatCalendarDate } from "@/lib/timezone";
 
 const initialState: InquiryFormState = {};
 
@@ -100,6 +101,9 @@ export function OfferForm({
           defaultValue={issuedOn}
           className={fieldClass}
         />
+        <p className="mt-1.5 text-sm text-olive/80">
+          {formatCalendarDate(issuedOn)}
+        </p>
       </label>
 
       <div className="overflow-x-auto">
