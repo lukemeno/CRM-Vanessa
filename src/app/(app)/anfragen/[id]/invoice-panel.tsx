@@ -103,7 +103,7 @@ export function InvoicePanel({
         </ul>
       )}
 
-      {remainingGrossCents != null ? (
+      {remainingGrossCents != null && remainingGrossCents > 0 ? (
         <p className="text-sm text-olive-dark">
           Offen: {formatEuroFromCents(remainingGrossCents)} brutto
         </p>

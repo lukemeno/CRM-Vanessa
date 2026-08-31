@@ -17,7 +17,7 @@ import {
 import { isGuestCountLocked, stornoWindowCopy } from "@/domain/eventakte";
 import { EVENT_SOURCE_LABELS, getInquiry } from "@/domain/inquiry";
 import {
-  hasOpenAnzahlung,
+  canIssueAnzahlung,
   invoiceLineLabel,
   listInvoicesForEvent,
   remainingGrossCents,
@@ -163,7 +163,7 @@ export default async function EventaktePage({
           <InvoicePanel
             eventId={inquiry.id}
             remainingGrossCents={remaining}
-            canIssueAnzahlung={!hasOpenAnzahlung(invoices)}
+            canIssueAnzahlung={canIssueAnzahlung(invoices, remaining)}
             canIssueBalance={remaining != null && remaining > 0}
             invoices={invoices.map((row) => ({
               id: row.id,

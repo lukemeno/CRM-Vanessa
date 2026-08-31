@@ -13,6 +13,7 @@ describe("renderInvoicePdf", () => {
       netCents: 84_034,
       vatCents: 15_966,
       grossCents: 100_000,
+      description: "Anzahlung",
       createdAt: new Date("2026-06-21T08:00:00.000Z"),
       event: {
         coupleAName: "Jana Hermes",
