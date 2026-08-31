@@ -15,7 +15,10 @@ export function NavLinks({ compact = false }: { compact?: boolean }) {
   return (
     <nav className={compact ? "flex flex-wrap gap-2" : "flex flex-col gap-1"}>
       {NAV.map((item) => {
-        const active = pathname === item.href;
+        const active =
+          item.href === "/anfragen"
+            ? pathname === item.href || pathname.startsWith(`${item.href}/`)
+            : pathname === item.href;
         return (
           <Link
             key={item.href}

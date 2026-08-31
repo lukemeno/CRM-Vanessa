@@ -32,6 +32,7 @@ pnpm test
 - `calendar_block` is the only overlap table (`EXCLUDE USING gist (period WITH &&) WHERE (blocks_calendar)`). Do not put `now()` in that predicate.
 - Invoice numbers are `RE-YYYY-NNN` from `invoice_counter` (`SELECT FOR UPDATE`). Amounts are append-only; Storno is a new row. Offer numbers stay date-style (`21062026`).
 - Status values are only `new|viewing|offer|booked|planning|done|lost`. `reserved_until` is a field, not a status. Lost requires `lost_reason`.
+- Inquiry source is only `website|bridebook|manual|other` (default `manual`).
 
 ## Forbidden
 
