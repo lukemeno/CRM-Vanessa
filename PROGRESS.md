@@ -50,6 +50,21 @@
 - [x] Eventakte is a sheet (couple names heading, sentence-case labels, no script chrome title)
 - [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
 
+## PR-6 — Anzahlung and invoices
+
+- [x] Eventakte issues Anzahlung (100000 cents gross) and Restzahlung as German PDFs
+- [x] `RE-YYYY-NNN` gapless via `invoice_counter` `SELECT FOR UPDATE`; Storno is a new row
+- [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
+
+## PR-7 — Calendar UI
+
+- [x] Internal month view for Alte Hettnerfabrik (one venue)
+- [x] Colors: Besichtigung, Planung, Gebucht, Blockiert, Aufgabe
+- [x] Click opens Eventakte at `/anfragen/[id]`
+- [x] Creating a viewing calls `scheduleViewing` (60+30 already on `calendar_block`); planning uses `schedulePlanning`
+- [x] Booked Saturday writes Fri 11:00–Sun 11:00; exclusion stays on `calendar_block`
+- [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
+
 ## Later PRs
 
-- Kalender UI, IMAP, Heute content, invoices/Anzahlung numbering UI
+- Heute content, IMAP

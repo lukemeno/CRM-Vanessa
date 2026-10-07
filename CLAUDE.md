@@ -45,4 +45,4 @@ pnpm test
 - IMAP (env placeholders only; no worker)
 - Mobile-first layout as the design source
 - Vercel Hobby for commercial hosting
-- `tenant_id`, public booking routes, calendar UI pages
+- `tenant_id`, public booking routes, ICS / Apple / Outlook / Google sync
