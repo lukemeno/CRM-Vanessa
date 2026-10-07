@@ -4,6 +4,8 @@ import {
   formatEuroFromCents,
   formatOfferNumber,
   grossCents,
+  parseEuroToCents,
+  centsToEuroInput,
   vatCents,
 } from "@/domain/money";
 
@@ -35,10 +37,26 @@ describe("money", () => {
       "1.234,56 €",
     );
   });
+
+  it("parses German EUR text to integer cents", () => {
+    expect(parseEuroToCents("2.000,00")).toBe(200_000);
+    expect(parseEuroToCents("2000,00 €")).toBe(200_000);
+    expect(parseEuroToCents("6350")).toBe(635_000);
+  });
+
+  it("formats cents for a German euro input", () => {
+    expect(centsToEuroInput(200_000)).toBe("2000,00");
+    expect(centsToEuroInput(755_650)).toBe("7556,50");
+  });
 });
 
 describe("offer numbers", () => {
-  it("keeps the sample offer date style 21062026", () => {
+  it("uses the issue date in DDMMYYYY, like sample 21062026", () => {
     expect(formatOfferNumber("2026-06-21")).toBe("21062026");
+  });
+
+  it("does not number an offer from the wedding date", () => {
+    expect(formatOfferNumber("2027-07-24")).not.toBe("21062026");
+    expect(formatOfferNumber("2027-07-24")).toBe("24072027");
   });
 });

@@ -2,7 +2,7 @@
 
 Betriebs-App für **Events by Vanessa** (Vanessa Düster, Alte Hettnerfabrik, Bad Münstereifel). Nach dem Anmelden landet die Operatorin auf `/heute`.
 
-Diese Version ist das Gerüst plus das Fachmodell in Postgres, das Anfragenboard und die Eventakte: Magic-Link-Login (Allowlist), eine Desktop-Shell (Heute, Anfragen, Kalender) und Tabellen für Eventakte, Termine, Kalenderblöcke und Rechnungen. Unter `/anfragen` sieht Vanessa jede Anfrage nach Status und kann eine anlegen. Die Eventakte liegt unter `/anfragen/[id]` — Board und Akte sind ein Ort. Kalenderinhalt, Angebot-PDFs, IMAP und Heute-Inhalt kommen später.
+Diese Version ist das Gerüst plus das Fachmodell in Postgres, das Anfragenboard und die Eventakte: Magic-Link-Login (Allowlist), eine Desktop-Shell (Heute, Anfragen, Kalender) und Tabellen für Eventakte, Angebote, Termine, Kalenderblöcke und Rechnungen. Unter `/anfragen` sieht Vanessa jede Anfrage nach Status und kann eine anlegen. Die Eventakte liegt unter `/anfragen/[id]` — Board und Akte sind ein Ort. Auf der Akte kann sie ein Angebot mit Positionen bauen und als PDF herunterladen. Kalenderinhalt, IMAP und Heute-Inhalt kommen später.
 
 Die Oberfläche ist **desktop-first** (`md`/`lg`). Vanessa arbeitet am Rechner; Handy und Tablet bleiben lesbar, sind aber der Fallback, nicht die Vorlage.
 
@@ -71,7 +71,7 @@ Bei aktivem Bypass schreibt der Server den Magic-Link in die Konsole, statt eine
 
 ## Datenbank
 
-Drizzle + Postgres. Auth.js-Tabellen (User, Account, Session, Verification Token) plus Fachtabellen `event`, `appointment`, `calendar_block`, `invoice`, `invoice_counter`. Überlappungen prüft nur `calendar_block` (`EXCLUDE USING gist`).
+Drizzle + Postgres. Auth.js-Tabellen (User, Account, Session, Verification Token) plus Fachtabellen `event`, `offer`, `offer_line`, `appointment`, `calendar_block`, `invoice`, `invoice_counter`. Überlappungen prüft nur `calendar_block` (`EXCLUDE USING gist`).
 
 `GET /api/health` meldet, ob Postgres erreichbar ist.
 
@@ -79,7 +79,7 @@ Drizzle + Postgres. Auth.js-Tabellen (User, Account, Session, Verification Token
 
 Nicht in diesem PR:
 
-- Angebote und PDFs
 - Kalender-UI
 - Inhalt der Heute-Kacheln
 - Kundenportal
+- Rechnungs-UI / Anzahlung-Nummernkreis

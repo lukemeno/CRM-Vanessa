@@ -10,7 +10,7 @@ import {
   scheduleViewing,
 } from "@/domain/calendar";
 import { CalendarConflictError } from "@/domain/errors";
-import { GUEST_COUNT_LOCKED_COPY, updateGuestCount } from "@/domain/eventakte";
+import { GUEST_COUNT_LOCKED_COPY, updateGuestCount, updateEventContact } from "@/domain/eventakte";
 import {
   changeInquiryStatus,
   createInquiry,
@@ -18,6 +18,8 @@ import {
   updateEventNote,
 } from "@/domain/inquiry";
 import { parseDateTimeLocal } from "@/lib/timezone";
+import { parseEuroToCents } from "@/domain/money";
+import { saveOffer } from "@/domain/offer";
 
 export type InquiryFormState = {
   error?: string;
@@ -48,12 +50,21 @@ const guestCountSchema = eventIdSchema.extend({
   guestCount: z.string().optional(),
 });
 
+const contactSchema = eventIdSchema.extend({
+  email: z.string().optional(),
+  phone: z.string().optional(),
+});
+
 const noteSchema = eventIdSchema.extend({
   note: z.string().optional(),
 });
 
 const reservedUntilSchema = eventIdSchema.extend({
   reservedUntil: z.string().optional(),
+});
+
+const saveOfferSchema = eventIdSchema.extend({
+  issuedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Bitte ein Datum angeben."),
 });
 
 const appointmentSchema = eventIdSchema.extend({
@@ -115,6 +126,21 @@ function germanDomainError(error: unknown): string {
   }
   if (message.includes("invalid datetime")) {
     return "Datum oder Uhrzeit ist ungültig.";
+  }
+  if (message.includes("offer lines required")) {
+    return "Bitte mindestens eine Position angeben.";
+  }
+  if (message.includes("offer line description")) {
+    return "Bitte eine Beschreibung für jede Position angeben.";
+  }
+  if (message.includes("quantity")) {
+    return "Die Menge muss eine ganze Zahl ab 1 sein.";
+  }
+  if (message.includes("integer cents") || message.includes("invalid euro")) {
+    return "Bitte Beträge als Euro angeben.";
+  }
+  if (message.includes("invalid calendar date")) {
+    return "Das Ausstellungsdatum ist ungültig.";
   }
   return "Die Anfrage konnte nicht gespeichert werden.";
 }
@@ -228,6 +254,34 @@ export async function updateGuestCountAction(
   return {};
 }
 
+export async function updateEventContactAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = contactSchema.safeParse({
+    id: formData.get("id"),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  try {
+    await updateEventContact(db, parsed.data.id, {
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+    });
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
 export async function updateNoteAction(
   _prev: InquiryFormState,
   formData: FormData,
@@ -326,6 +380,64 @@ export async function createAppointmentAction(
         end,
       });
     }
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+export async function saveOfferAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = saveOfferSchema.safeParse({
+    id: formData.get("id"),
+    issuedOn: String(formData.get("issuedOn") ?? ""),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  const descriptions = formData.getAll("description").map(String);
+  const quantities = formData.getAll("quantity").map(String);
+  const unitNets = formData.getAll("unitNet").map(String);
+  const count = Math.max(
+    descriptions.length,
+    quantities.length,
+    unitNets.length,
+  );
+
+  const lines = [];
+  for (let index = 0; index < count; index += 1) {
+    const description = descriptions[index]?.trim() ?? "";
+    const quantityRaw = quantities[index]?.trim() ?? "";
+    const unitRaw = unitNets[index]?.trim() ?? "";
+    if (!description && !quantityRaw && !unitRaw) {
+      continue;
+    }
+    let quantity: number;
+    let unitNetCents: number;
+    try {
+      quantity = Number(quantityRaw);
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        throw new Error("quantity must be a positive integer");
+      }
+      unitNetCents = parseEuroToCents(unitRaw);
+    } catch (error) {
+      return { error: germanDomainError(error) };
+    }
+    lines.push({ description, quantity, unitNetCents });
+  }
+
+  try {
+    await saveOffer(db, parsed.data.id, {
+      issuedOn: parsed.data.issuedOn,
+      lines,
+    });
   } catch (error) {
     return { error: germanDomainError(error) };
   }
