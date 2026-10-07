@@ -1,16 +1,35 @@
+import Link from "next/link";
+import { db } from "@/db/client";
+import { groupInquiriesByStatus, listInquiries } from "@/domain/inquiry";
+import { InquiryBoard } from "@/app/(app)/anfragen/inquiry-board";
+
 export const metadata = {
   title: "Anfragen",
 };
 
 export const dynamic = "force-dynamic";
 
-export default function AnfragenPage() {
+export default async function AnfragenPage() {
+  const grouped = groupInquiriesByStatus(await listInquiries(db));
+
   return (
     <>
-      <h1 className="font-serif text-3xl text-olive">Anfragen</h1>
-      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/80">
-        Das Anfragenboard folgt in einem späteren PR.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-serif text-3xl text-olive">Anfragen</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/80">
+            Alle Anfragen nach Status. Leere Spalten bleiben sichtbar.
+          </p>
+        </div>
+        <Link
+          href="/anfragen/neu"
+          className="rounded-full bg-olive px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-olive-dark"
+        >
+          Neue Anfrage
+        </Link>
+      </div>
+
+      <InquiryBoard grouped={grouped} />
     </>
   );
 }

@@ -14,6 +14,20 @@ export function formatToday(
   }).format(now);
 }
 
+/** Calendar-day display (YYYY-MM-DD stored as date, shown in German). */
+export function formatCalendarDate(ymd: string): string {
+  const [year, month, day] = ymd.split("-").map(Number);
+  if (!year || !month || !day) {
+    throw new Error(`invalid calendar date: ${ymd}`);
+  }
+  return new Intl.DateTimeFormat(APP_LOCALE, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
 export function addCalendarDays(ymd: string, days: number): string {
   const [year, month, day] = ymd.split("-").map(Number);
   const utc = Date.UTC(year, month - 1, day + days);

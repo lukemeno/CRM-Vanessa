@@ -27,6 +27,14 @@ export const EVENT_STATUSES = [
 ] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
+export const EVENT_SOURCES = [
+  "website",
+  "bridebook",
+  "manual",
+  "other",
+] as const;
+export type EventSource = (typeof EVENT_SOURCES)[number];
+
 export const APPOINTMENT_KINDS = ["viewing", "planning"] as const;
 export type AppointmentKind = (typeof APPOINTMENT_KINDS)[number];
 
@@ -42,6 +50,7 @@ export const INVOICE_KINDS = ["invoice", "storno"] as const;
 export type InvoiceKind = (typeof INVOICE_KINDS)[number];
 
 export const eventStatusEnum = pgEnum("event_status", [...EVENT_STATUSES]);
+export const eventSourceEnum = pgEnum("event_source", [...EVENT_SOURCES]);
 export const appointmentKindEnum = pgEnum("appointment_kind", [
   ...APPOINTMENT_KINDS,
 ]);
@@ -141,6 +150,8 @@ export const event = pgTable(
     guestCount: integer("guest_count"),
     quotedNetCents: integer("quoted_net_cents"),
     eventDate: date("event_date", { mode: "string" }),
+    source: eventSourceEnum("source").notNull().default("manual"),
+    note: text("note"),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
   (table) => [

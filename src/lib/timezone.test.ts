@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   APP_TIMEZONE,
   addCalendarDays,
+  formatCalendarDate,
   formatToday,
   yearInTimeZone,
   zonedInstant,
@@ -19,6 +20,10 @@ describe("timezone", () => {
     );
     expect(formatted).toContain("August");
     expect(formatted).toContain("2026");
+  });
+
+  it("formats a stored event date as dd.mm.yyyy", () => {
+    expect(formatCalendarDate("2026-09-12")).toBe("12.09.2026");
   });
 
   it("builds a Berlin instant for a calendar date and hour", () => {

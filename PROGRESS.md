@@ -20,6 +20,15 @@
 - [x] Collision tests: double-booked weekend, viewing vs booked, overlapping viewing buffers, expired reserve
 - [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
 
+## PR-3 — Anfragen board
+
+- [x] `/anfragen` German board grouped by Neu / Besichtigung / Angebot / Gebucht / Planung / Fertig / Verloren
+- [x] Create inquiry (two names, optional date/guests/note, source) lands in `new`
+- [x] `event.source` (`website | bridebook | manual | other`, default `manual`) + optional `note`
+- [x] Moving to lost requires a reason; empty columns stay visible
+- [x] Thin read-only summary at `/anfragen/[id]` (no Eventakte editors)
+- [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
+
 ## Later PRs
 
-- Anfragen board, Kalender UI, Angebote PDFs, IMAP, Heute content
+- Eventakte, Kalender UI, Angebote PDFs, IMAP, Heute content

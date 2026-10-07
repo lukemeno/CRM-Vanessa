@@ -2,7 +2,7 @@
 
 Betriebs-App für **Events by Vanessa** (Vanessa Düster, Alte Hettnerfabrik, Bad Münstereifel). Nach dem Anmelden landet die Operatorin auf `/heute`.
 
-Diese Version ist das Gerüst plus das Fachmodell in Postgres: Magic-Link-Login (Allowlist), eine leere Desktop-Shell (Heute, Anfragen, Kalender) und Tabellen für Eventakte, Termine, Kalenderblöcke und Rechnungen. Anfragenboard, Kalenderinhalt, Angebot-PDFs, IMAP und Heute-Inhalt kommen später.
+Diese Version ist das Gerüst plus das Fachmodell in Postgres und das Anfragenboard: Magic-Link-Login (Allowlist), eine Desktop-Shell (Heute, Anfragen, Kalender) und Tabellen für Eventakte, Termine, Kalenderblöcke und Rechnungen. Unter `/anfragen` sieht Vanessa jede Anfrage nach Status und kann eine anlegen. Kalenderinhalt, Angebot-PDFs, IMAP und Heute-Inhalt kommen später.
 
 Die Oberfläche ist **desktop-first** (`md`/`lg`). Vanessa arbeitet am Rechner; Handy und Tablet bleiben lesbar, sind aber der Fallback, nicht die Vorlage.
 
@@ -79,7 +79,7 @@ Drizzle + Postgres. Auth.js-Tabellen (User, Account, Session, Verification Token
 
 Nicht in diesem PR:
 
-- Anfragenboard
+- Eventakte-Editoren
 - Angebote und PDFs
 - Kalender-UI
 - Inhalt der Heute-Kacheln
