@@ -30,7 +30,7 @@ pnpm test
 - Money is integer **cents**, never floats. VAT is 19% MwSt (`quoted_net_cents` on event; offer and invoice store net/vat/gross).
 - Dates: `date` for calendar days, `timestamptz` / `tstzrange` for instants. Display in `Europe/Berlin`.
 - `calendar_block` is the only overlap table (`EXCLUDE USING gist (period WITH &&) WHERE (blocks_calendar)`). Do not put `now()` in that predicate.
-- Invoice numbers are `RE-YYYY-NNN` from `invoice_counter` (`SELECT FOR UPDATE`). Amounts are append-only; Storno is a new row. Offer numbers are the issue date as `DDMMYYYY` (`21062026` = 21.06.2026). Not the wedding date. Not `RE-`.
+- Invoice numbers are `RE-YYYY-NNN` from `invoice_counter` (`SELECT FOR UPDATE`). Amounts are append-only; Storno is a new row. Offer numbers are the issue date as `DDMMYYYY` (`21062026` = 21.06.2026). A second offer issued the same day is `21062026-2`, then `-3`. Unique. Not the wedding date. Not `RE-`.
 - One offer per event (`offer` + `offer_line`). Lines are description, qty, unit net cents; totals are integer cents at 19% MwSt. Catalog until packages arrive is the sample 21062026 lines.
 - Status values are only `new|viewing|offer|booked|planning|done|lost`. German label for `done` is **Erledigt**. `reserved_until` is a field, not a status. Lost requires `lost_reason`.
 - Inquiry source is only `website|bridebook|manual|other` (default `manual`).

@@ -20,6 +20,11 @@ import {
 import { parseDateTimeLocal } from "@/lib/timezone";
 import { parseEuroToCents } from "@/domain/money";
 import { saveOffer } from "@/domain/offer";
+import {
+  issueAnzahlung,
+  issueBalanceInvoice,
+  stornoInvoice,
+} from "@/domain/invoice";
 
 export type InquiryFormState = {
   error?: string;
@@ -141,6 +146,18 @@ function germanDomainError(error: unknown): string {
   }
   if (message.includes("invalid calendar date")) {
     return "Das Ausstellungsdatum ist ungültig.";
+  }
+  if (message.includes("anzahlung already issued")) {
+    return "Die Anzahlung ist bereits ausgestellt.";
+  }
+  if (message.includes("offer required")) {
+    return "Bitte zuerst ein Angebot speichern.";
+  }
+  if (message.includes("nothing remaining")) {
+    return "Es ist nichts offen.";
+  }
+  if (message.includes("already stornoed") || message.includes("cannot storno")) {
+    return "Diese Rechnung ist bereits storniert.";
   }
   return "Die Anfrage konnte nicht gespeichert werden.";
 }
@@ -438,6 +455,80 @@ export async function saveOfferAction(
       issuedOn: parsed.data.issuedOn,
       lines,
     });
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+const invoiceIdSchema = eventIdSchema.extend({
+  invoiceId: z.string().uuid("Ungültige Rechnung."),
+});
+
+export async function issueAnzahlungAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = eventIdSchema.safeParse({
+    id: formData.get("id"),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  try {
+    await issueAnzahlung(db, parsed.data.id, { now: new Date() });
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+export async function issueBalanceInvoiceAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = eventIdSchema.safeParse({
+    id: formData.get("id"),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  try {
+    await issueBalanceInvoice(db, parsed.data.id, { now: new Date() });
+  } catch (error) {
+    return { error: germanDomainError(error) };
+  }
+
+  revalidateEventakte(parsed.data.id);
+  return {};
+}
+
+export async function stornoInvoiceAction(
+  _prev: InquiryFormState,
+  formData: FormData,
+): Promise<InquiryFormState> {
+  const parsed = invoiceIdSchema.safeParse({
+    id: formData.get("id"),
+    invoiceId: formData.get("invoiceId"),
+  });
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.",
+    };
+  }
+
+  try {
+    await stornoInvoice(db, parsed.data.invoiceId, { now: new Date() });
   } catch (error) {
     return { error: germanDomainError(error) };
   }

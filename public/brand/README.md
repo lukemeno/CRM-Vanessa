@@ -1,6 +1,6 @@
 # Brand assets
 
-Olive `#5c6540`, cream/paper, Events + script, leaf.
+Olive `#5c6540`, cream/paper, Events + script `by Vanessa`, botanical olive leaf (`olive-leaf.png`) on offer and invoice PDFs.
 
 Fonts (SIL Open Font License):
 

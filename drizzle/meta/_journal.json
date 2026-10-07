@@ -36,6 +36,20 @@
       "when": 1788175699102,
       "tag": "0004_offer-tables",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788181200000,
+      "tag": "0005_offer-number-unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788182400000,
+      "tag": "0006_invoice-description",
+      "breakpoints": true
     }
   ]
 }

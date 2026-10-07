@@ -1,6 +1,12 @@
 import { asc, eq } from "drizzle-orm";
 import { event as eventTable, offer, offerLine } from "@/db/schema";
 import type { AppSession } from "@/db/types";
+import {
+  BELEG_SENDER,
+  OFFER_BELEG_TERMS,
+  belegCoupleNames,
+  type BelegPdfModel,
+} from "@/domain/beleg";
 import { bookedLocationWindowCopy } from "@/domain/calendar";
 import { formatOfferNumber, grossCents, vatCents } from "@/domain/money";
 import { formatCalendarDate } from "@/lib/timezone";
@@ -90,6 +96,31 @@ function parseIssuedOn(issuedOn: string): string {
   return issuedOn;
 }
 
+/** First offer of the day is DDMMYYYY. A second offer that day gets -2, then -3. */
+export function nextOfferNumber(
+  issuedOn: string,
+  taken: readonly string[],
+  keep: string | null = null,
+): string {
+  const base = formatOfferNumber(issuedOn);
+  const keepMatch = keep ? /^(\d{8})(?:-\d+)?$/.exec(keep) : null;
+  if (keepMatch?.[1] === base) {
+    return keep as string;
+  }
+  const relevant = new Set(
+    taken.filter((number) => number === base || number.startsWith(`${base}-`)),
+  );
+  if (!relevant.has(base)) {
+    return base;
+  }
+  for (let n = 2; ; n += 1) {
+    const candidate = `${base}-${n}`;
+    if (!relevant.has(candidate)) {
+      return candidate;
+    }
+  }
+}
+
 function normalizedLines(lines: OfferLineInput[]): OfferLineInput[] {
   if (lines.length === 0) {
     throw new Error("offer lines required");
@@ -116,7 +147,6 @@ export async function saveOffer(
   const issuedOn = parseIssuedOn(input.issuedOn);
   const lines = normalizedLines(input.lines);
   const totals = offerTotals(lines);
-  const number = formatOfferNumber(issuedOn);
 
   return db.transaction(async (tx) => {
     const [eventRow] = await tx
@@ -131,6 +161,13 @@ export async function saveOffer(
       .select()
       .from(offer)
       .where(eq(offer.eventId, eventId));
+
+    const taken = (
+      await tx.select({ id: offer.id, number: offer.number }).from(offer)
+    )
+      .filter((row) => row.id !== existing?.id)
+      .map((row) => row.number);
+    const number = nextOfferNumber(issuedOn, taken, existing?.number ?? null);
 
     let offerRow;
     if (existing) {
@@ -233,15 +270,19 @@ export type OfferPdfSource = {
   };
 };
 
-export function offerPdfModel(record: OfferPdfSource) {
+export function offerPdfModel(record: OfferPdfSource): BelegPdfModel {
   return {
+    heading: `Angebot ${record.number}`,
     number: record.number,
     issuedOnLabel: formatCalendarDate(record.issuedOn),
-    coupleNames: `${record.event.coupleAName} & ${record.event.coupleBName}`,
+    coupleNames: belegCoupleNames(
+      record.event.coupleAName,
+      record.event.coupleBName,
+    ),
     eventDateLabel: record.event.eventDate
       ? formatCalendarDate(record.event.eventDate)
       : null,
-    locationName: "Alte Hettnerfabrik",
+    locationName: BELEG_SENDER.venue,
     locationWindow: bookedLocationWindowCopy(),
     lines: record.lines.map((line) => ({
       description: line.description,
@@ -253,7 +294,9 @@ export function offerPdfModel(record: OfferPdfSource) {
     vatCents: record.vatCents,
     grossCents: record.grossCents,
     vatPercent: 19,
+    terms: OFFER_BELEG_TERMS,
+    sender: BELEG_SENDER,
   };
 }
 
-export type OfferPdfModel = ReturnType<typeof offerPdfModel>;
+export type OfferPdfModel = BelegPdfModel;

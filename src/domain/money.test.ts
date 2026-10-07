@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   VAT_PERCENT,
+  ANZAHLUNG_GROSS_CENTS,
   formatEuroFromCents,
   formatOfferNumber,
   grossCents,
+  netFromGross,
   parseEuroToCents,
   centsToEuroInput,
   vatCents,
@@ -26,6 +28,14 @@ describe("money", () => {
 
   it("rejects non-integer cents", () => {
     expect(() => vatCents(10.5)).toThrow(/integer cents/);
+  });
+
+  it("splits 1000 EUR gross into 84034 net and 15966 MwSt", () => {
+    expect(ANZAHLUNG_GROSS_CENTS).toBe(100_000);
+    const net = netFromGross(ANZAHLUNG_GROSS_CENTS);
+    expect(net).toBe(84_034);
+    expect(vatCents(net)).toBe(15_966);
+    expect(grossCents(net)).toBe(100_000);
   });
 
   it("formats integer cents as German EUR", () => {
