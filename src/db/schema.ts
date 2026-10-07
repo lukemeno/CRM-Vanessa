@@ -152,6 +152,8 @@ export const event = pgTable(
     eventDate: date("event_date", { mode: "string" }),
     source: eventSourceEnum("source").notNull().default("manual"),
     note: text("note"),
+    email: text("email"),
+    phone: text("phone"),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
   (table) => [

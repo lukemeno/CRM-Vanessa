@@ -8,6 +8,7 @@ import {
 } from "@/db/schema";
 import type { AppDb, AppSession } from "@/db/types";
 import { createEvent, markLost } from "@/domain/event";
+import { expireOfferHold, holdOfferWeekend } from "@/domain/calendar";
 
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   new: "Neu",
@@ -15,7 +16,7 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
   offer: "Angebot",
   booked: "Gebucht",
   planning: "Planung",
-  done: "Fertig",
+  done: "Erledigt",
   lost: "Verloren",
 };
 
@@ -33,6 +34,8 @@ export type CreateInquiryInput = {
   guestCount?: number | null;
   source?: EventSource;
   note?: string | null;
+  email?: string | null;
+  phone?: string | null;
 };
 
 export type Inquiry = typeof eventTable.$inferSelect;
@@ -59,6 +62,16 @@ export function groupInquiriesByStatus(
   return grouped;
 }
 
+/** One-line Verloren card copy: the reason text itself, otherwise nothing. */
+export function boardLostReason(
+  inquiry: Pick<Inquiry, "status" | "lostReason">,
+): string | null {
+  if (inquiry.status !== "lost") {
+    return null;
+  }
+  return emptyToNull(inquiry.lostReason);
+}
+
 export async function createInquiry(db: AppSession, input: CreateInquiryInput) {
   const coupleAName = input.coupleAName.trim();
   const coupleBName = input.coupleBName.trim();
@@ -76,6 +89,12 @@ export async function createInquiry(db: AppSession, input: CreateInquiryInput) {
     throw new Error("guest_count must be a non-negative integer");
   }
 
+  const email = emptyToNull(input.email);
+  const phone = emptyToNull(input.phone);
+  if (!email && !phone) {
+    throw new Error("email or phone required");
+  }
+
   return createEvent(db, {
     coupleAName,
     coupleBName,
@@ -84,6 +103,8 @@ export async function createInquiry(db: AppSession, input: CreateInquiryInput) {
     guestCount,
     source,
     note: emptyToNull(input.note),
+    email,
+    phone,
   });
 }
 
@@ -122,4 +143,42 @@ export async function changeInquiryStatus(
       lostReason: null,
     })
     .where(eq(eventTable.id, eventId));
+}
+
+export async function updateEventNote(
+  db: AppSession,
+  eventId: string,
+  note: string | null,
+) {
+  const [updated] = await db
+    .update(eventTable)
+    .set({ note: emptyToNull(note) })
+    .where(eq(eventTable.id, eventId))
+    .returning();
+  if (!updated) {
+    throw new Error("event not found");
+  }
+  return updated;
+}
+
+export async function setReservedUntil(
+  db: AppDb,
+  eventId: string,
+  reservedUntil: Date | null,
+  opts: { now: Date },
+) {
+  const [updated] = await db
+    .update(eventTable)
+    .set({ reservedUntil })
+    .where(eq(eventTable.id, eventId))
+    .returning();
+  if (!updated) {
+    throw new Error("event not found");
+  }
+  if (updated.eventDate) {
+    await holdOfferWeekend(db, eventId, updated.eventDate, opts);
+  } else {
+    await expireOfferHold(db, eventId, opts);
+  }
+  return updated;
 }

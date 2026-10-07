@@ -22,13 +22,23 @@
 
 ## PR-3 — Anfragen board
 
-- [x] `/anfragen` German board grouped by Neu / Besichtigung / Angebot / Gebucht / Planung / Fertig / Verloren
+- [x] `/anfragen` German board grouped by Neu / Besichtigung / Angebot / Gebucht / Planung / Erledigt / Verloren
 - [x] Create inquiry (two names, optional date/guests/note, source) lands in `new`
 - [x] `event.source` (`website | bridebook | manual | other`, default `manual`) + optional `note`
 - [x] Moving to lost requires a reason; empty columns stay visible
-- [x] Thin read-only summary at `/anfragen/[id]` (no Eventakte editors)
+- [x] Thin Eventakte at `/anfragen/[id]` deepened in PR-4
+- [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
+
+## PR-4 — Eventakte
+
+- [x] `/anfragen/[id]` is the Eventakte (board still links there; not a second CRM)
+- [x] Couple names, date, guests, status (Erledigt), quoted EUR from cents, source, note, email, phone
+- [x] Location window from BOOKED_WEEKEND (Fr 11:00 bis So 11:00); Storno full refund until 3 months before event_date
+- [x] Guest count editable until 10 days before event_date, then locked
+- [x] Appointments list + add form using viewing 60+30 / planning period writers
+- [x] Verloren cards show the lost reason; create inquiry requires email or phone
 - [x] Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`
 
 ## Later PRs
 
-- Eventakte, Kalender UI, Angebote PDFs, IMAP, Heute content
+- Kalender UI, Angebote PDFs, IMAP, Heute content

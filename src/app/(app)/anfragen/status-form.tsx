@@ -27,7 +27,7 @@ export function StatusForm({
   const [nextStatus, setNextStatus] = useState<EventStatus>(status);
 
   return (
-    <form action={action} className="mt-8 max-w-xl space-y-4">
+    <form action={action} className="space-y-4">
       <input type="hidden" name="id" value={eventId} />
 
       <label className="block">

@@ -17,9 +17,6 @@ export default async function AnfragenPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl text-olive">Anfragen</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground/80">
-            Alle Anfragen nach Status. Leere Spalten bleiben sichtbar.
-          </p>
         </div>
         <Link
           href="/anfragen/neu"

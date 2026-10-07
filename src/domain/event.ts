@@ -18,6 +18,8 @@ export type CreateEventInput = {
   eventDate?: string | null;
   source?: EventSource;
   note?: string | null;
+  email?: string | null;
+  phone?: string | null;
 };
 
 export async function createEvent(db: AppSession, input: CreateEventInput) {
@@ -34,6 +36,8 @@ export async function createEvent(db: AppSession, input: CreateEventInput) {
       eventDate: input.eventDate ?? null,
       source: input.source ?? "manual",
       note: input.note ?? null,
+      email: input.email ?? null,
+      phone: input.phone ?? null,
     })
     .returning();
   if (!row) {

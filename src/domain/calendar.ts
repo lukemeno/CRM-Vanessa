@@ -1,8 +1,9 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import {
   appointment,
   calendarBlock,
   event as eventTable,
+  type AppointmentKind,
 } from "@/db/schema";
 import type { AppDb, AppSession } from "@/db/types";
 import type { TstzRange } from "@/db/tstzrange";
@@ -11,6 +12,11 @@ import { APP_TIMEZONE, addCalendarDays, zonedInstant } from "@/lib/timezone";
 
 export const VIEWING_DURATION_MS = 60 * 60 * 1000;
 export const VIEWING_BUFFER_AFTER_MS = 30 * 60 * 1000;
+
+export const APPOINTMENT_KIND_LABELS: Record<AppointmentKind, string> = {
+  viewing: "Besichtigung",
+  planning: "Planung",
+};
 
 /** Venue occupation for a booked Saturday. Not a settings row. */
 export const BOOKED_WEEKEND = {
@@ -142,6 +148,9 @@ export async function schedulePlanning(
   db: AppDb,
   input: { eventId: string; start: Date; end: Date },
 ) {
+  if (!(input.end.getTime() > input.start.getTime())) {
+    throw new Error("planning period requires end after start");
+  }
   return db.transaction(async (tx) => {
     const period = planningBlockPeriod({ start: input.start, end: input.end });
     const [row] = await tx
@@ -207,4 +216,12 @@ export async function expireOfferHold(
   if (!holdIsActive(row?.reservedUntil ?? null, opts.now)) {
     await deleteReservedBlocks(db, eventId);
   }
+}
+
+export async function listAppointments(db: AppSession, eventId: string) {
+  return db
+    .select()
+    .from(appointment)
+    .where(eq(appointment.eventId, eventId))
+    .orderBy(asc(appointment.createdAt));
 }
