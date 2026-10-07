@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4efe4;
+  --foreground: #3d3a2e;
+  --olive: #5c6540;
+  --olive-dark: #3a4128;
+  --cream: #faf6ee;
+  --paper: #fffdf8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-olive: var(--olive);
+  --color-olive-dark: var(--olive-dark);
+  --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --font-sans: var(--font-source-sans);
+  --font-serif: var(--font-cormorant);
+  --font-script: var(--font-great-vibes);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/*
+  Layout is desktop-first. Unprefixed Tailwind is the operator canvas (md/lg).
+  Use max-lg / max-md only to keep phone and tablet readable.
+*/
